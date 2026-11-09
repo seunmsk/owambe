@@ -5,5 +5,5 @@
 window.OWAMBE_CONFIG = {
   supabaseUrl: '',      // e.g. 'https://abcdxyz.supabase.co'
   supabaseAnonKey: '',  // the long "anon public" key
-  siteUrl: ''           // optional: your live address, e.g. 'https://owambesurvivor.com/'
+  siteUrl: 'https://owambe.pages.dev/'  // live address used in share and challenge links
 };

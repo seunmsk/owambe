@@ -33,8 +33,10 @@ Optional, recommended before a big launch: turn on CAPTCHA protection for sign-i
 - `submit_score` rejects impossible scores (over a per-second cap), stale daily parties, and rapid-fire submissions.
 - Nicknames are unique (case-insensitive) and limited to 3–16 letters, numbers, spaces or `_`.
 
-## Deploy (GitHub Pages)
-Repo **Settings > Pages > Build and deployment:** Source **Deploy from a branch**, Branch **main**, folder **/ (root)**. The game goes live at `https://<user>.github.io/owambe/` (a custom domain can be added on the same page).
+## Deploy (Cloudflare Pages)
+Live at **https://owambe.pages.dev/**. Cloudflare is connected to this repo: every push to `main` deploys automatically.
+Settings: framework preset **None**, build command **empty**, build output directory **/**.
+A custom domain can be added in Cloudflare under the project's **Custom domains** tab.
 
 ## Adding things
 - **MCs:** edit the `MCS` list in `index.html` (name, colours, catchphrases, `voice` clips per moment, optional `img`). Only feature real MCs with their written permission.
