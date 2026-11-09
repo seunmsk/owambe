@@ -36,6 +36,7 @@ h2{font-family:Bungee,Outfit,sans-serif;font-weight:400;font-size:clamp(30px,9.5
 h2.sm{font-size:clamp(24px,8vw,32px)}
 .sub{margin-top:8px;font-weight:600;font-size:15px;color:#e8d5ff;letter-spacing:.04em}
 .today{margin:18px 0 10px;width:100%;border-radius:18px;padding:14px 16px;text-align:left;background:linear-gradient(135deg,rgba(255,194,61,.16),rgba(123,44,191,.22));border:1px solid rgba(255,194,61,.35);position:relative;overflow:hidden}
+.today.withav .tnum,.today.withav .tven,.today.withav .tmeta{padding-right:72px}
 .today .tnum{font-family:Bungee,Outfit,sans-serif;font-size:18px;color:var(--gold)}
 .today .tven{font-weight:800;font-size:15px;margin-top:4px;color:#fff}
 .today .tmeta{font-size:13px;color:#e3d2fa;margin-top:3px}
@@ -145,7 +146,8 @@ body:not(.online) .online-only{display:none!important}
       <div class="tmeta" id="chMeta"></div>
       <button class="btn" id="chBtn">Accept the challenge</button>
     </div>
-    <div class="today">
+    <div class="today" id="todayCard">
+      <canvas id="mcAv" style="display:none;position:absolute;right:12px;top:12px;width:64px;height:64px"></canvas>
       <div class="tnum" id="tNum">Today's Owambe #1</div>
       <div class="tven" id="tVen"></div>
       <div class="tmeta" id="tMC"></div>
@@ -337,6 +339,16 @@ const MCS=[
   {id:'jaiye',name:'MC Jaiye',tag:'Enjoyment minister',color:'#4ecdc4',cap:'#7b2cbf',shades:false,
    lines:{hype:["Jaiye jaiye! Spray am well well!","Big Man, show us love!"]},voice:{},img:null}
 ];
+// Featured MCs: not in the daily rotation; reached by their own link, e.g. /maleek -> /?mc=maleek
+MCS.push({id:'maleek',name:'MC Maleek',handle:'@maleekthemc',tag:'Salute to the celebrant!',color:'#a8dcb4',draw:'maleek',hidden:true,
+  lines:{start:["MC Maleek don land! Owambe don start!","Salute to the celebrant! Hands up!"],
+         hype:["Maleek say: who get money, make e spray!","Big Man, salute! Show us love!"],
+         combo:["Salute! This one na correct guest!"],
+         dance_start:["Maleek dey call you! Come and dance for the celebrant!"],
+         dance_win:["Salute! Crowd, spray am well well!"],
+         end:["Salute! Thank you for coming, safe journey!"]},voice:{},img:null});
+const ROT=MCS.filter(m=>!m.hidden);
+const FORCED_MC=MCS.find(m=>m.id===new URLSearchParams(location.search).get('mc'))||null;
 function mcLine(mc,key){const own=(mc.lines&&mc.lines[key])||[];const all=own.concat(MC_BASE[key]||[]);return pick(all);}
 
 const MOVES={legwork:{n:'Legwork',e:'🦵',c:'#ff9f1c'},zanku:{n:'Zanku',e:'⚡',c:'#4ecdc4'},shaku:{n:'Shaku Shaku',e:'🌀',c:'#ff4d6d'},gbese:{n:'Gbese',e:'💥',c:'#a6ff7e'}};
@@ -348,13 +360,13 @@ function yesterdayKey(){const d=new Date();d.setDate(d.getDate()-1);return dateK
 function dayNum(key){const[y,m,d]=key.split('-').map(Number);return Math.floor((Date.UTC(y,m-1,d)-Date.UTC(2026,10,9))/864e5)+1;}
 function dailyCfg(){
   const key=todayKey(), seed=hashStr('owambe-'+key), r=mulberry32(seed);
-  const venue=VENUE_IDS[Math.floor(r()*VENUE_IDS.length)], mc=MCS[Math.floor(r()*MCS.length)];
+  const venue=VENUE_IDS[Math.floor(r()*VENUE_IDS.length)], mcRot=ROT[Math.floor(r()*ROT.length)], mc=FORCED_MC||mcRot;
   let mod;
   if(new Date().getDay()===6) mod=SATURDAY;
   else {const tot=MODS.reduce((a,m)=>a+m.w,0);let x=r()*tot;mod=MODS[0];for(const m of MODS){x-=m.w;if(x<0){mod=m;break}}}
   return {mode:'daily',key,num:dayNum(key),seed,venue,mc,mod};
 }
-function freeCfg(){return {mode:'free',venue:pick(VENUE_IDS),mc:pick(MCS),mod:MODS[0],seed:(Math.random()*2147483647)|0};}
+function freeCfg(){return {mode:'free',venue:pick(VENUE_IDS),mc:FORCED_MC||pick(ROT),mod:MODS[0],seed:(Math.random()*2147483647)|0};}
 let challenge=null;
 function chalCfg(){const c=challenge; const mod=MODS.find(m=>m.id===c.mod)||(c.mod==='sat'?SATURDAY:MODS[0]);
   return {mode:'challenge',seed:Number(c.seed),venue:VENUES[c.venue]?c.venue:'hall',mc:MCS.find(m=>m.id===c.mc)||MCS[0],mod,key:String(c.day),num:dayNum(String(c.day)),code:c.code,rival:c.nickname,target:c.haul};}
@@ -1155,6 +1167,7 @@ function drawBubble(a){
 const mcImgs={};
 function drawMCAvatar(c,mc,x,y,r){
   c.save(); c.beginPath(); c.arc(x,y,r,0,7); c.closePath(); c.fillStyle=mc.color; c.fill(); c.clip();
+  if(mc.draw==='maleek'){drawMaleek(c,x,y,r); c.restore(); c.strokeStyle='rgba(255,255,255,.85)'; c.lineWidth=2; c.beginPath(); c.arc(x,y,r,0,7); c.stroke(); return;}
   if(mc.img){ if(!mcImgs[mc.id]){const im=new Image(); im.src=mc.img; mcImgs[mc.id]=im;} const im=mcImgs[mc.id]; if(im.complete&&im.naturalWidth){c.drawImage(im,x-r,y-r,r*2,r*2); c.restore(); return;} }
   c.fillStyle='#5a3420'; circ(c,x,y+r*.15,r*.55);
   c.fillRect(x-r*.22,y+r*.55,r*.44,r*.5);
@@ -1168,6 +1181,36 @@ function drawMCAvatar(c,mc,x,y,r){
   c.fillStyle='#333'; c.fillRect(-r*.07,0,r*.14,r*.5); c.fillStyle='#bbb'; circ(c,0,0,r*.2);
   c.restore();
   c.strokeStyle='rgba(255,255,255,.8)'; c.lineWidth=2; c.beginPath(); c.arc(x,y,r,0,7); c.stroke();
+}
+function drawMaleek(c,x,y,r){
+  const SKm='#4e2c1a', HAIR='#120a06', MINT='#c3e3c8', MINT2='#99c4a1';
+  c.fillStyle='#bd8c87'; c.fillRect(x-r,y-r,r*2,r*2);
+  c.save(); c.translate(x,y); c.scale(1.18,1.18); c.translate(-x,-y+r*.1);
+  c.fillStyle=MINT; c.beginPath(); c.moveTo(x-r*1.2,y+r*1.2); c.quadraticCurveTo(x-r*.95,y+r*.5,x-r*.28,y+r*.42); c.lineTo(x+r*.28,y+r*.42); c.quadraticCurveTo(x+r*.95,y+r*.5,x+r*1.2,y+r*1.2); c.closePath(); c.fill();
+  c.fillStyle='#fff'; c.beginPath(); c.moveTo(x-r*.2,y+r*.42); c.lineTo(x+r*.2,y+r*.42); c.lineTo(x,y+r*.78); c.closePath(); c.fill();
+  c.fillStyle='#23140d'; c.beginPath(); c.moveTo(x-r*.07,y+r*.5); c.lineTo(x+r*.07,y+r*.5); c.lineTo(x+r*.14,y+r*1.05); c.lineTo(x-r*.14,y+r*1.05); c.closePath(); c.fill();
+  for(const [dx,dy,col] of [[-.03,.6,'#e3823a'],[.04,.72,'#f5efe6'],[-.05,.84,'#e3823a'],[.05,.95,'#f5efe6'],[0,.66,'#c9b48a']]){c.fillStyle=col; circ(c,x+r*dx,y+r*dy,r*.035);}
+  c.strokeStyle=MINT2; c.lineWidth=r*.06; c.beginPath(); c.moveTo(x-r*.24,y+r*.44); c.lineTo(x-r*.04,y+r*1.05); c.moveTo(x+r*.24,y+r*.44); c.lineTo(x+r*.04,y+r*1.05); c.stroke();
+  c.fillStyle=MINT2; circ(c,x+r*.3,y+r*.92,r*.04);
+  c.fillStyle=SKm; c.fillRect(x-r*.14,y+r*.15,r*.28,r*.3);
+  c.beginPath(); c.ellipse(x+r*.03,y-r*.06,r*.38,r*.46,0,0,7); c.fill();
+  c.beginPath(); c.ellipse(x+r*.4,y-r*.04,r*.07,r*.12,0,0,7); c.fill();
+  c.fillStyle=HAIR; c.beginPath(); c.ellipse(x+r*.03,y-r*.3,r*.39,r*.24,0,Math.PI*1.02,Math.PI*1.98); c.fill();
+  c.strokeStyle=HAIR; c.lineWidth=r*.05; c.lineCap='round';
+  c.beginPath(); c.moveTo(x-r*.18,y-r*.16); c.lineTo(x-r*.04,y-r*.18); c.moveTo(x+r*.1,y-r*.2); c.quadraticCurveTo(x+r*.2,y-r*.26,x+r*.3,y-r*.2); c.stroke();
+  c.fillStyle='#fff'; c.beginPath(); c.ellipse(x-r*.11,y-r*.08,r*.06,r*.03,0,0,7); c.fill(); c.beginPath(); c.ellipse(x+r*.2,y-r*.09,r*.065,r*.045,0,0,7); c.fill();
+  c.fillStyle='#120a06'; circ(c,x-r*.1,y-r*.08,r*.025); circ(c,x+r*.21,y-r*.09,r*.03);
+  c.strokeStyle='rgba(0,0,0,.35)'; c.lineWidth=r*.03; c.beginPath(); c.moveTo(x+r*.03,y-r*.02); c.quadraticCurveTo(x-r*.02,y+r*.08,x+r*.06,y+r*.09); c.stroke();
+  c.fillStyle=HAIR; c.beginPath(); c.moveTo(x-r*.08,y+r*.25); c.quadraticCurveTo(x+r*.03,y+r*.52,x+r*.13,y+r*.25); c.quadraticCurveTo(x+r*.03,y+r*.31,x-r*.08,y+r*.25); c.fill();
+  c.strokeStyle=HAIR; c.lineWidth=r*.025; c.beginPath(); c.moveTo(x-r*.06,y+r*.15); c.quadraticCurveTo(x+r*.03,y+r*.12,x+r*.12,y+r*.15); c.stroke();
+  c.fillStyle='#6b3a30'; c.beginPath(); c.ellipse(x+r*.03,y+r*.19,r*.075,r*.055,0,0,7); c.fill();
+  c.fillStyle='#8a4c40'; c.beginPath(); c.ellipse(x+r*.03,y+r*.175,r*.04,r*.02,0,0,7); c.fill();
+  c.strokeStyle=MINT; c.lineCap='round'; c.lineWidth=r*.32;
+  c.beginPath(); c.moveTo(x-r*1.05,y+r*.85); c.lineTo(x-r*.82,y-r*.12); c.lineTo(x-r*.45,y-r*.36); c.stroke();
+  c.strokeStyle='#fff'; c.lineWidth=r*.1; c.beginPath(); c.moveTo(x-r*.5,y-r*.46); c.lineTo(x-r*.4,y-r*.26); c.stroke();
+  c.fillStyle='#6b3d26'; c.save(); c.translate(x-r*.2,y-r*.38); c.rotate(-.18); c.beginPath(); c.ellipse(0,0,r*.27,r*.1,0,0,7); c.fill(); c.strokeStyle='rgba(0,0,0,.35)'; c.lineWidth=r*.02; for(const fy of [-.03,.02]){c.beginPath(); c.moveTo(-r*.02,r*fy); c.lineTo(r*.22,r*fy); c.stroke();} c.restore();
+  c.fillStyle='#8a4a22'; c.save(); c.translate(x-r*.46,y-r*.38); c.rotate(.9); c.fillRect(-r*.1,-r*.035,r*.2,r*.07); c.fillStyle='#d9b45a'; circ(c,0,0,r*.045); c.restore();
+  c.restore();
 }
 function drawMC(){
   const m=g.mcMsg; if(!m) return;
@@ -1301,12 +1344,19 @@ document.querySelectorAll('#sexSeg button').forEach(b=>b.onclick=()=>{
 
 // ---------- menu ----------
 function streakCount(){const s=save.streak;return (s.last===todayKey()||s.last===yesterdayKey())?s.count:0;}
+const mav=$('#mcAv'), mavc=mav.getContext('2d');
+function drawMenuAv(){
+  const d=Math.min(2,window.devicePixelRatio||1); if(mav.width!==64*d){mav.width=64*d; mav.height=64*d;}
+  mavc.setTransform(d,0,0,d,0,0); mavc.clearRect(0,0,64,64);
+  drawMCAvatar(mavc,FORCED_MC,32,32+Math.sin(clock*3)*1.2,29);
+}
+if(FORCED_MC){ $('#mcAv').style.display='block'; $('#todayCard').classList.add('withav'); document.querySelector('#menu .kicker').textContent='Special edition · hosted by '+FORCED_MC.name; }
 function refreshMenu(){
   const c=dailyCfg();
   if(state==='menu') setVenue(c.venue);
   $('#tNum').textContent=`Today's Owambe #${c.num}`;
   $('#tVen').textContent='📍 '+VENUES[c.venue].name+' · 🎵 '+STYLE_NAMES[venueStyle(c.venue)];
-  $('#tMC').textContent='🎤 Hosted by '+c.mc.name+' · '+c.mc.tag;
+  $('#tMC').textContent='🎤 Hosted by '+c.mc.name+(c.mc.handle?' ('+c.mc.handle+')':'')+' · '+c.mc.tag;
   $('#tMod').textContent=c.mod.name+' · '+c.mod.desc;
   const d=save.daily.key===c.key?save.daily:null;
   $('#tBest').textContent=d&&d.plays?`Your best today: ${fmt(d.best)} · ${d.plays} play${d.plays>1?'s':''}`:"You haven't attended today's party yet";
@@ -1328,7 +1378,7 @@ function frame(t){
     if(g.slow>0){g.slow-=dt; s*=.35;}
     if(g.ending!=null){g.ending-=dt; s*=.3; if(g.ending<=0) endGame();}
     clock+=s; g.real+=dt; update(s);
-  } else if(state==='menu'||state==='wardrobe'){clock+=dt; updateDeco(dt); if(state==='wardrobe') drawPreview();}
+  } else if(state==='menu'||state==='wardrobe'){clock+=dt; updateDeco(dt); if(state==='wardrobe') drawPreview(); else if(FORCED_MC) drawMenuAv();}
   else if(state==='over'){clock+=dt*.5;}
   render(dt);
   requestAnimationFrame(frame);
@@ -1423,7 +1473,8 @@ async function shareText(txt,btn){
 // ---------- online: Supabase (only when config.js has keys; otherwise the game runs offline) ----------
 const OCFG=window.OWAMBE_CONFIG||{};
 let sb=null, me=null, nick=store.get('owambe_nick',''), lbScope='today';
-const siteUrl=()=>OCFG.siteUrl||(location.origin+location.pathname);
+const baseUrl=()=>OCFG.siteUrl||(location.origin+'/');
+const siteUrl=()=>baseUrl()+(FORCED_MC?FORCED_MC.id:'');
 const esc=t=>String(t).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 function loadScript(src){return new Promise((res,rej)=>{const el=document.createElement('script');el.src=src;el.onload=res;el.onerror=rej;document.head.appendChild(el);});}
 async function onlineInit(){
@@ -1482,7 +1533,7 @@ async function makeChallenge(){
   const {data,error}=await sb.rpc('create_challenge',{p_mode:c.mode==='daily'?'daily':'free',p_day:c.key||todayKey(),p_seed:c.seed,p_venue:c.venue,p_mod:c.mod.id,p_mc:c.mc.id,p_haul:Math.round(g.naira)});
   if(error){btn.textContent='Try again'; return;}
   btn.textContent='⚔️ Challenge a friend';
-  const url=siteUrl()+'?c='+data;
+  const url=baseUrl()+'?c='+data+(FORCED_MC?'&mc='+FORCED_MC.id:'');
   await shareText(`I went home with ${fmt(g.naira)} from the owambe 💸 Same party, same money. Can you beat me? ${url}`,btn);
 }
 async function loadLB(){
