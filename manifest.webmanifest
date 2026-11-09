@@ -1,0 +1,14 @@
+{
+  "name": "Owambe Survivor: Naira Rain",
+  "short_name": "Owambe",
+  "description": "Catch the naira, dodge the aunties, win the dance-off.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0612",
+  "theme_color": "#0b0612",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
