@@ -78,6 +78,11 @@ details.howto summary::-webkit-details-marker{display:none}
 .mcquote{margin-top:12px;font-size:13px;color:#d8c6ef;font-style:italic}
 .brag{display:none;margin-top:10px;font-size:12px;color:#ddd;background:rgba(0,0,0,.45);padding:8px 10px;border-radius:10px;width:100%;white-space:pre-line;text-align:left;-webkit-user-select:text;user-select:text}
 .msg{font-size:15px;color:#e8d5ff;margin-top:6px}
+.bbar{position:absolute;left:10px;top:36%;display:none;flex-direction:column;gap:10px;z-index:3}
+.bbar.show{display:flex}
+.bbar button{appearance:none;position:relative;width:50px;height:50px;border-radius:50%;border:2px solid var(--c);background:rgba(20,8,30,.78);font-size:22px;cursor:pointer;touch-action:manipulation;box-shadow:0 0 14px var(--c)}
+.bbar button b{position:absolute;right:-4px;top:-4px;min-width:20px;height:20px;border-radius:10px;background:var(--c);color:#1a0a00;font:800 11px/20px Outfit,sans-serif;padding:0 5px}
+.lblsub{align-self:flex-start;font-size:11.5px;color:#a995c4;margin:-3px 0 6px;text-align:left}
 .dbar{position:absolute;left:10px;right:10px;bottom:14px;display:none;grid-template-columns:repeat(4,1fr);gap:8px;z-index:4}
 .dbar.show{display:grid;animation:fade .3s ease}
 .dbar button{appearance:none;border:2px solid var(--c);background:linear-gradient(180deg,rgba(30,12,45,.92),rgba(12,4,20,.92));color:#fff;border-radius:16px;height:70px;font:800 12px Outfit,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:0 4px 0 rgba(0,0,0,.4);touch-action:manipulation}
@@ -130,6 +135,7 @@ body:not(.online) .online-only{display:none!important}
     <button class="ib" id="pauseBtn" aria-label="Pause">⏸</button>
   </div>
 
+  <div class="bbar" id="boostBar"></div>
   <div class="dbar" id="danceBar">
     <button data-m="legwork" style="--c:#ff9f1c"><span>🦵</span>Legwork</button>
     <button data-m="zanku" style="--c:#4ecdc4"><span>⚡</span>Zanku</button>
@@ -180,11 +186,14 @@ body:not(.online) .online-only{display:none!important}
     <canvas id="pv"></canvas>
     <div class="seg" id="sexSeg"><button data-v="m">Man</button><button data-v="f">Woman</button></div>
     <div class="lbl">Outfit</div><div class="chips" id="outfitChips"></div>
+    <div class="lbl" id="sleeveLbl">Sleeves</div><div class="chips" id="sleeveChips"></div>
     <div class="lbl">Headwear</div><div class="chips" id="hatChips"></div>
+    <div class="lbl">Footwear</div><div class="chips" id="shoeChips"></div>
     <div class="lbl">Fabric</div><div class="sw" id="fabricSw"></div>
     <div class="lbl" id="headLbl">Cap colour</div><div class="sw" id="headSw"></div>
     <div class="lbl">Accessories</div><div class="chips" id="accChips"></div>
     <div class="lbl">Skin tone</div><div class="sw" id="skinSw"></div>
+    <div class="lbl">Party boosts</div><div class="lblsub">Buy now, tap them during the party when you need them</div><div class="chips" id="boostChips"></div>
     <button class="btn" id="goBtn">Let's dance!</button>
     <div class="hint" id="wHint"></div>
     <button class="btn ghost wide" id="wBack">Back</button>
@@ -581,22 +590,32 @@ const HATS={
   f:[['gele','Gele','Big and bold',0],['turban','Turban','Easy wrap',15000],['none','No headtie','Hair puff',0]]
 };
 const ACCS=[['none','None','Keep it simple',0],['shades','Shades','Odogwu mode',25000],['chain','Gold chain','Shine bright',40000],['coral','Coral beads','Royal touch',60000]];
+const SLEEVES=[['long','Long sleeve','Classic',0],['short','Short sleeve','Cool & breezy',0]];
+const SHOES={
+  m:[['loafers','Loafers','Classic',0],['palm','Palm slippers','Pam pam',15000],['white','White sneakers','Clean steps',20000]],
+  f:[['flats','Flats','Comfy',0],['heels','Heels','Slay mode',20000],['sandals','Gold sandals','Shine bright',25000]]
+};
+const BOOSTS={magnet:{e:'🧲',n:'Money magnet',d:'8s pull',p:8000,c:'#4ecdc4'},shield:{e:'🛡️',n:'Aso-ebi shield',d:'8s safe',p:10000,c:'#ffd93d'},life:{e:'🍩',n:'Extra life',d:'+1 ❤',p:15000,c:'#ff9f43'},rain:{e:'💸',n:'Money rain',d:'5s spray',p:20000,c:'#7ee081'}};
+if(!save.boosts) save.boosts={magnet:0,shield:0,life:0,rain:0};
 const STREAK_REWARDS={3:{bank:20000,txt:'3-day streak: +₦20,000 bonus'},7:{item:'acc:coral',txt:'7-day streak: Coral beads unlocked'},14:{bank:100000,txt:'14-day streak: +₦100,000 bonus'},30:{item:'fab:lace',txt:'30-day streak: Chairman gold lace unlocked'}};
-const DEFLOOK={sex:'m',outfit:'agbada',hat:'fila',fabric:'gold',head:'purple',skin:'#7a4a2c',acc:'none'};
+const DEFLOOK={sex:'m',outfit:'agbada',hat:'fila',fabric:'gold',head:'purple',skin:'#7a4a2c',acc:'none',sleeve:'long',shoe:'loafers'};
 let look=Object.assign({},DEFLOOK,store.get('owambe_look',{}));
+if(!SHOES[look.sex].some(x=>x[0]===look.shoe)) look.shoe=SHOES[look.sex][0][0];
 for(const k of ['fabric','head']) if(String(look[k]).startsWith('#')){const f=FABRICS.find(x=>x.c===look[k]); look[k]=f?f.id:DEFLOOK[k];}
 const owns=key=>save.owned.includes(key);
 function itemPrice(key){
   const[t,id]=key.split(':');
   if(t==='fab') return fabById(id).p;
   if(t==='acc') return (ACCS.find(a=>a[0]===id)||[0,0,0,0])[3];
+  if(t==='sleeve') return 0;
+  if(t==='shoe'){for(const sx of ['m','f']){const it=SHOES[sx].find(a=>a[0]===id); if(it) return it[3];} return 0;}
   const list=t==='outfit'?OUTFITS:HATS;
   for(const sx of ['m','f']){const it=list[sx].find(a=>a[0]===id); if(it) return it[3];}
   return 0;
 }
 const unlocked=key=>itemPrice(key)===0||owns(key);
 function pendingItems(){
-  const keys=[...new Set(['outfit:'+look.outfit,'hat:'+look.hat,'fab:'+look.fabric,'fab:'+look.head,'acc:'+look.acc])];
+  const keys=[...new Set(['outfit:'+look.outfit,'hat:'+look.hat,'fab:'+look.fabric,'fab:'+look.head,'acc:'+look.acc,'shoe:'+look.shoe])];
   const items=keys.filter(k=>!unlocked(k)); return {items,total:items.reduce((a,k)=>a+itemPrice(k),0)};
 }
 function lookName(L){const o=OUTFITS[L.sex].find(x=>x[0]===L.outfit);return o?o[1]:'';}
@@ -739,9 +758,32 @@ function stepFx(dt){
   g.texts=g.texts.filter(t=>t.life>0);
 }
 
+// ---------- party boosts ----------
+let boostShown=false;
+function renderBoostBar(){
+  const bar=$('#boostBar'); bar.innerHTML='';
+  for(const[k,B] of Object.entries(BOOSTS)){const n=save.boosts[k]||0; if(!n) continue;
+    const b=document.createElement('button'); b.style.setProperty('--c',B.c); b.setAttribute('aria-label',B.n); b.innerHTML=`${B.e}<b>${n}</b>`;
+    b.addEventListener('pointerdown',e=>{e.preventDefault(); e.stopPropagation(); useBoost(k);}); bar.appendChild(b);}
+}
+function useBoost(k){
+  if(!g||state!=='play'||g.dance||g.ending!=null||!(save.boosts[k]>0)) return;
+  if(k==='life'&&g.lives>=5){floatText(W/2,H*.45,'Lives already full!','#ff9f43'); return;}
+  save.boosts[k]--; persist(); sfx.power();
+  if(k==='magnet'){g.magnet=Math.max(g.magnet,8); floatText(P.x,P.y-P.h,'🧲 Money magnet!','#4ecdc4',true);}
+  if(k==='shield'){g.shield=Math.max(g.shield,8); floatText(P.x,P.y-P.h,'🛡️ Aso-ebi shield!','#ffd93d',true);}
+  if(k==='life'){g.lives++; floatText(P.x,P.y-P.h,'🍩 +1 life!','#ff9f43',true);}
+  if(k==='rain'){g.storm=Math.max(g.storm,5); banner('MONEY RAIN!','You called the Big Man 💸');}
+  renderBoostBar();
+}
+function syncBoostBar(){
+  const want=state==='play'&&g&&!g.dance&&g.ending==null&&Object.values(save.boosts).some(n=>n>0);
+  if(want!==boostShown){boostShown=want; $('#boostBar').classList.toggle('show',want);}
+}
+
 // ---------- dance-off ----------
 const DPOSE={l:[-.47,-.47],r:[.47,-.47]};
-function partnerLook(){const sex=look.sex==='m'?'f':'m';return {sex,outfit:sex==='m'?'agbada':'iro',hat:sex==='m'?'fila':'gele',fabric:look.fabric,head:look.head,skin:look.skin===SKINS[2]?SKINS[1]:SKINS[2],acc:'none'};}
+function partnerLook(){const sex=look.sex==='m'?'f':'m';return {sex,sleeve:'long',shoe:sex==='m'?'loafers':'heels',outfit:sex==='m'?'agbada':'iro',hat:sex==='m'?'fila':'gele',fabric:look.fabric,head:look.head,skin:look.skin===SKINS[2]?SKINS[1]:SKINS[2],acc:'none'};}
 function startDance(){
   for(const it of g.items) burst(it.x,it.y,it.k==='note'?it.c1:'#ffffff',4);
   g.items=[]; g.magnet=0;
@@ -988,14 +1030,36 @@ function drawChar(c,L,w,h,sad,pose){
   const acc=(isLight(F)||fab.id==='gold'||fab.id==='lace')?'#7a2fb5':'#ffc23d';
   const accH=(isLight(A)||hfab.id==='gold'||hfab.id==='lace')?'#7a2fb5':'#ffc23d';
   c.lineCap='round'; c.lineJoin='round';
+  const shortS=L.sleeve==='short'&&!(L.sex==='m'&&L.outfit==='agbada');
   const arms=(col,lw)=>{const lx=w*PZ.l[0],ly=h*PZ.l[1],rx=w*PZ.r[0],ry=h*PZ.r[1];
+    if(shortS){
+      c.strokeStyle=SK;c.lineWidth=lw*.6*s;c.beginPath();c.moveTo(-w*.22,-h*.13);c.lineTo(lx,ly);c.moveTo(w*.22,-h*.13);c.lineTo(rx,ry);c.stroke();
+      const f=.42; c.strokeStyle=col;c.lineWidth=(lw+2)*s;c.beginPath();
+      c.moveTo(-w*.22,-h*.13);c.lineTo(-w*.22+(lx+w*.22)*f,-h*.13+(ly+h*.13)*f);c.moveTo(w*.22,-h*.13);c.lineTo(w*.22+(rx-w*.22)*f,-h*.13+(ry+h*.13)*f);c.stroke();
+    } else {
     c.strokeStyle=col;c.lineWidth=lw*s;c.beginPath();c.moveTo(-w*.22,-h*.13);c.lineTo(lx,ly);c.moveTo(w*.22,-h*.13);c.lineTo(rx,ry);c.stroke();
+    }
     c.fillStyle=SK;circ(c,-w*.22+(lx+w*.22)*1.08,-h*.13+(ly+h*.13)*1.08,5.5*s);circ(c,w*.22+(rx-w*.22)*1.08,-h*.13+(ry+h*.13)*1.08,5.5*s);};
+  const drawShoes=()=>{
+    const sh=L.shoe||(L.sex==='m'?'loafers':'flats');
+    for(const sx of [-1,1]){
+      if(L.sex==='m'){const x=sx*w*.15,y=h*.49;
+        if(sh==='palm'){c.fillStyle='#8a5a2b'; c.beginPath(); c.ellipse(x,y+1*s,w*.14,3*s,0,0,7); c.fill(); c.fillStyle=SK; c.beginPath(); c.ellipse(x,y-1.2*s,w*.11,2.6*s,0,0,7); c.fill(); c.fillStyle='#5a3418'; c.fillRect(x-w*.07,y-3.2*s,w*.14,2.6*s);}
+        else if(sh==='white'){c.fillStyle='#f4f4f4'; c.beginPath(); c.ellipse(x,y,w*.14,4*s,0,0,7); c.fill(); c.fillStyle='#c9c9c9'; c.fillRect(x-w*.14,y+1.6*s,w*.28,1.8*s); c.fillStyle='#ff4d6d'; c.fillRect(x-w*.03,y-2*s,w*.06,1.4*s);}
+        else {c.fillStyle='#1e120a'; c.beginPath(); c.ellipse(x,y,w*.13,3.6*s,0,0,7); c.fill(); c.fillStyle='rgba(255,255,255,.25)'; c.beginPath(); c.ellipse(x-sx*w*.03,y-1.4*s,w*.05,1*s,0,0,7); c.fill();}
+      } else {const x=sx*w*.1,y=h*.495;
+        if(sh==='heels'){c.fillStyle=A; c.beginPath(); c.moveTo(x-w*.085,y+1.5*s); c.quadraticCurveTo(x-w*.06,y-4.5*s,x+w*.02,y-3.5*s); c.lineTo(x+w*.09,y+1.5*s); c.closePath(); c.fill();
+          c.fillRect(x+sx*w*.07-1*s,y+1*s,2*s,5*s); c.fillStyle='rgba(255,255,255,.35)'; c.fillRect(x-w*.05,y-2.6*s,w*.06,1*s);}
+        else if(sh==='sandals'){c.fillStyle=SK; c.beginPath(); c.ellipse(x,y,w*.09,2.8*s,0,0,7); c.fill(); c.strokeStyle='#ffc23d'; c.lineWidth=1.5*s; c.beginPath(); c.moveTo(x-w*.08,y-.8*s); c.lineTo(x+w*.08,y-.8*s); c.moveTo(x,y-3*s); c.lineTo(x,y+1*s); c.stroke(); c.fillStyle='#b8860b'; c.fillRect(x-w*.09,y+2*s,w*.18,1.5*s);}
+        else {c.fillStyle='#2b170c'; c.beginPath(); c.ellipse(x,y,w*.1,3*s,0,0,7); c.fill();}
+      }
+    }
+  };
   const dots=(col,x0,y0,nx,ny,dx,dy,r)=>{if(fab.pat) return; c.fillStyle=col;for(let i=0;i<nx;i++)for(let j=0;j<ny;j++)circ(c,x0+i*dx+(j%2)*dx/2,y0+j*dy,r*s);};
   if(L.sex==='m'){
     const legCol=L.outfit==='buba'?F:D, lw=L.outfit==='buba'?.2:.17;
     c.fillStyle=legCol; rr(c,-w*(.04+lw),h*.1,w*lw,h*.37,3*s); c.fill(); rr(c,w*.04,h*.1,w*lw,h*.37,3*s); c.fill();
-    c.fillStyle='#2b170c'; c.beginPath(); c.ellipse(-w*.15,h*.49,w*.13,3.5*s,0,0,7); c.ellipse(w*.15,h*.49,w*.13,3.5*s,0,0,7); c.fill();
+    drawShoes();
     if(L.outfit==='agbada'){
       arms(F,14);
       c.fillStyle=F; c.beginPath(); c.moveTo(-w*.26,-h*.2); c.lineTo(w*.26,-h*.2); c.lineTo(w*.56,h*.33); c.quadraticCurveTo(0,h*.39,-w*.56,h*.33); c.closePath(); c.fill(); patt(c,fab,w,h,s);
@@ -1021,7 +1085,6 @@ function drawChar(c,L,w,h,sad,pose){
       c.strokeStyle=acc; c.lineWidth=1.5*s; c.beginPath(); c.moveTo(-w*.47,-h*.43); c.lineTo(-w*.41,-h*.46); c.moveTo(w*.47,-h*.43); c.lineTo(w*.41,-h*.46); c.stroke();
     }
   } else {
-    c.fillStyle='#2b170c'; c.beginPath(); c.ellipse(-w*.1,h*.5,w*.1,3*s,0,0,7); c.ellipse(w*.1,h*.5,w*.1,3*s,0,0,7); c.fill();
     const iro=(top)=>{
       c.fillStyle=F; c.beginPath(); c.moveTo(-w*.3,h*top); c.lineTo(w*.3,h*top); c.lineTo(w*.25,h*.49); c.lineTo(-w*.25,h*.49); c.closePath(); c.fill(); patt(c,fab,w,h,s);
       c.save(); c.clip(); dots('rgba(255,255,255,.13)',-w*.3,h*(top+.05),7,5,w*.1,h*.09,1.4);
@@ -1037,7 +1100,11 @@ function drawChar(c,L,w,h,sad,pose){
       c.fillStyle=A; c.beginPath(); c.moveTo(-w*.3,-h*.17); c.lineTo(-w*.14,-h*.21); c.lineTo(w*.36,h*.08); c.lineTo(w*.2,h*.12); c.closePath(); c.fill(); patt(c,hfab,w,h,s);
       c.strokeStyle=accH; c.lineWidth=1.3*s; c.beginPath(); c.moveTo(-w*.25,-h*.17); c.lineTo(w*.26,h*.09); c.stroke();
     } else if(L.outfit==='oleku'){
-      iro(.06);
+      c.fillStyle=SK; rr(c,-w*.17,h*.22,w*.11,h*.27,3*s); c.fill(); rr(c,w*.06,h*.22,w*.11,h*.27,3*s); c.fill();
+      c.fillStyle='rgba(0,0,0,.12)'; c.fillRect(-w*.17,h*.29,w*.11,h*.015); c.fillRect(w*.06,h*.29,w*.11,h*.015);
+      c.fillStyle=F; c.beginPath(); c.moveTo(-w*.28,h*.05); c.lineTo(w*.28,h*.05); c.lineTo(w*.31,h*.29); c.lineTo(-w*.31,h*.29); c.closePath(); c.fill(); patt(c,fab,w,h,s);
+      c.strokeStyle=D; c.lineWidth=2*s; c.beginPath(); c.moveTo(w*.26,h*.07); c.lineTo(w*.02,h*.29); c.stroke();
+      c.strokeStyle=acc; c.lineWidth=2*s; c.beginPath(); c.moveTo(-w*.31,h*.275); c.lineTo(w*.31,h*.275); c.stroke();
       arms(Lt,8);
       c.fillStyle=Lt; circ(c,-w*.24,-h*.17,6*s); circ(c,w*.24,-h*.17,6*s);
       c.beginPath(); c.moveTo(-w*.23,-h*.2); c.lineTo(w*.23,-h*.2); c.lineTo(w*.18,-h*.02); c.lineTo(-w*.18,-h*.02); c.closePath(); c.fill(); patt(c,fab,w,h,s);
@@ -1057,6 +1124,7 @@ function drawChar(c,L,w,h,sad,pose){
       c.fillStyle=A; rr(c,-w*.2,-h*.02,w*.4,h*.035,2*s); c.fill();
     }
   }
+  if(L.sex==='f') drawShoes();
   // neck + head
   c.fillStyle=SK; c.fillRect(-w*.07,-h*.25,w*.14,h*.07);
   circ(c,0,-h*.3,w*.22);
@@ -1244,7 +1312,7 @@ function drawHUD(){
   for(let i=0;i<Math.max(3,g.lives);i++) drawHeart(26*U+i*22*U,52*U,8*U,i<g.lives);
   if(g.combo>=3){ctx.font=`800 ${13*U}px Outfit, sans-serif`; shadowText(`${g.combo} combo · x${mult()}`,16*U,76*U,mult()>1?'#7ee081':'#e8d5ff');}
   let x=W-14*U;
-  for(const [k,e,col,max] of [['storm','💸','#7ee081',5],['magnet','🍢','#4ecdc4',7],['shield','👗','#ffd93d',7]]){
+  for(const [k,e,col,max] of [['storm','💸','#7ee081',5],['magnet','🧲','#4ecdc4',8],['shield','🛡️','#ffd93d',8]]){
     if(g[k]>0){
       const y=62*U;
       ctx.fillStyle='rgba(0,0,0,.45)'; rr(ctx,x-64*U,y,64*U,22*U,11*U); ctx.fill();
@@ -1326,6 +1394,15 @@ function buildWardrobe(){
     const b=document.createElement('button');b.className='chip'+(look[key]===v?' on':'')+(lk?' lk':'');
     b.innerHTML=`${n}<small>${lk?'🔒 '+fmtK(price):sub}</small>`;b.onclick=()=>{look[key]=v;buildWardrobe();};el.appendChild(b);}};
   chips($('#outfitChips'),OUTFITS[look.sex],'outfit','outfit'); chips($('#hatChips'),HATS[look.sex],'hat','hat'); chips($('#accChips'),ACCS,'acc','acc');
+  chips($('#shoeChips'),SHOES[look.sex],'shoe','shoe');
+  const ag=look.sex==='m'&&look.outfit==='agbada';
+  $('#sleeveLbl').style.display=ag?'none':''; $('#sleeveChips').style.display=ag?'none':'';
+  chips($('#sleeveChips'),SLEEVES,'sleeve','sleeve');
+  const bc=$('#boostChips'); bc.innerHTML='';
+  for(const[k,B] of Object.entries(BOOSTS)){const b=document.createElement('button'); b.className='chip'; const n=save.boosts[k]||0;
+    b.innerHTML=`${B.e} ${B.n}<small>${B.d} · ${fmtK(B.p)}${n?` · <b style="color:#7ee081">you have ${n}</b>`:''}</small>`;
+    b.onclick=()=>{ if(save.bank<B.p){$('#wHint').textContent=`You need ${fmt(B.p-save.bank)} more for ${B.n}`; return;} save.bank-=B.p; save.boosts[k]=n+1; persist(); sfx.buy(); buildWardrobe(); $('#wHint').textContent=`✓ ${B.n} added. Tap it during the party.`;};
+    bc.appendChild(b);}
   const sw=(el,key)=>{el.innerHTML='';for(const f of FABRICS){const lk=!unlocked('fab:'+f.id);const b=document.createElement('button');b.style.background=swatchBg(f);
     b.title=f.n+(lk?' · '+fmtK(f.p):'');b.setAttribute('aria-label',b.title);b.className=(look[key]===f.id?'on':'')+(lk?' lk':'');b.onclick=()=>{look[key]=f.id;buildWardrobe();};el.appendChild(b);}};
   sw($('#fabricSw'),'fabric'); sw($('#headSw'),'head');
@@ -1333,13 +1410,13 @@ function buildWardrobe(){
   $('#headLbl').textContent=look.sex==='m'?'Cap colour':(look.outfit==='iro'?'Gele & ipele':look.outfit==='gown'?'Gele & print':'Gele colour');
   $('#wBank').textContent=fmt(save.bank);
   const p=pendingItems(), go=$('#goBtn'), hint=$('#wHint');
-  const names=p.items.map(k=>{const[t,id]=k.split(':');if(t==='fab')return fabById(id).n;const l=t==='acc'?ACCS:(t==='outfit'?OUTFITS:HATS)[look.sex];const it=l.find(a=>a[0]===id);return it?it[1]:id;});
+  const names=p.items.map(k=>{const[t,id]=k.split(':');if(t==='fab')return fabById(id).n;const l=t==='acc'?ACCS:(t==='outfit'?OUTFITS:t==='shoe'?SHOES:HATS)[look.sex];const it=l.find(a=>a[0]===id);return it?it[1]:id;});
   if(!p.items.length){go.disabled=false; go.textContent="Let's dance!"; hint.textContent=mode==='daily'?"Today's party: "+VENUES[dailyCfg().venue].name:mode==='challenge'&&challenge?`Challenge: beat ${challenge.nickname}'s ${fmt(challenge.haul)}`:'Free party · practice mode';}
   else if(save.bank>=p.total){go.disabled=false; go.textContent='Unlock for '+fmt(p.total); hint.textContent='Unlocks: '+names.join(', ');}
   else {go.disabled=true; go.textContent='Need '+fmt(p.total-save.bank)+' more'; hint.textContent='Catch more naira to unlock '+names.join(', ');}
 }
 document.querySelectorAll('#sexSeg button').forEach(b=>b.onclick=()=>{
-  if(look.sex===b.dataset.v) return; look.sex=b.dataset.v; look.outfit=OUTFITS[look.sex][0][0]; look.hat=HATS[look.sex][0][0]; buildWardrobe();
+  if(look.sex===b.dataset.v) return; look.sex=b.dataset.v; look.outfit=OUTFITS[look.sex][0][0]; look.hat=HATS[look.sex][0][0]; look.shoe=SHOES[look.sex][0][0]; buildWardrobe();
 });
 
 // ---------- menu ----------
@@ -1380,6 +1457,7 @@ function frame(t){
     clock+=s; g.real+=dt; update(s);
   } else if(state==='menu'||state==='wardrobe'){clock+=dt; updateDeco(dt); if(state==='wardrobe') drawPreview(); else if(FORCED_MC) drawMenuAv();}
   else if(state==='over'){clock+=dt*.5;}
+  syncBoostBar();
   render(dt);
   requestAnimationFrame(frame);
 }
@@ -1395,7 +1473,7 @@ function startGame(){
     save.bank-=p.total; save.owned.push(...p.items); persist(); sfx.buy();
   }
   store.set('owambe_look',look); show('wardrobe',false);
-  initAudio(); newGame(); state='play'; nextT=0; step=0; bar=0; startTrack();
+  initAudio(); newGame(); renderBoostBar(); state='play'; nextT=0; step=0; bar=0; startTrack();
   show('menu',false); show('over',false); show('pause',false); $('#hudbtns').classList.add('show');
   $('#bragTxt').style.display='none'; $('#bragBtn').textContent=mode==='daily'?'Share result':'Copy my brag';
 }
