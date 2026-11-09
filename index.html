@@ -103,7 +103,12 @@ body:not(.online) .online-only{display:none!important}
 .lbmsg{padding:20px;color:#cdb8e6;font-size:14px}
 #nickIn{width:100%;margin-top:16px;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:700 17px Outfit,sans-serif;text-align:center;-webkit-user-select:text;user-select:text}
 #nickIn:focus{outline:2px solid #ffc23d}
-#lb,#nick{z-index:7}
+#lb,#nick,#sync{z-index:7}
+#sync{background:radial-gradient(120% 70% at 50% 30%,#230c37,#06020c)}
+.code{font-family:Bungee,Outfit,sans-serif;font-size:34px;letter-spacing:.08em;color:#ffc23d;margin-top:12px}
+.tin{width:100%;margin-top:10px;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:800 20px Outfit,sans-serif;letter-spacing:.12em;text-align:center;text-transform:uppercase;-webkit-user-select:text;user-select:text}
+.syncbox{text-align:center;margin:14px 0 0}
+.syncbox .btn{margin-top:10px;font-size:16px;padding:12px}
 #over,#lb,#nick,#pause{background:radial-gradient(120% 70% at 50% 30%,rgba(35,12,55,.95),rgba(6,2,12,.97))}
 #wardrobe{background:radial-gradient(120% 70% at 50% 20%,rgba(45,15,70,.93),rgba(8,3,14,.97))}
 #pv{width:170px;height:190px;margin:2px 0 2px}
@@ -165,6 +170,7 @@ body:not(.online) .online-only{display:none!important}
     <button class="btn" id="dailyBtn">Enter today's party</button>
     <button class="btn ghost wide" id="freeBtn">Free party (practice)</button>
     <button class="btn ghost wide online-only" id="lbBtn">🏆 Leaderboard</button>
+    <button class="btn ghost wide online-only" id="syncBtn">📱 Play on another device</button>
     <details class="howto"><summary>How to play ▾</summary>
       <ul class="how">
         <li><span class="ic">💵</span><span><b>Catch the naira</b> as the big men spray</span></li>
@@ -242,6 +248,24 @@ body:not(.online) .online-only{display:none!important}
     <button class="btn ghost wide" id="lbClose">Close</button>
   </div></div>
 
+  <div class="ov" id="sync"><div class="inner">
+    <div class="kicker">Phone + laptop</div>
+    <h2 class="sm">ONE PROGRESS, ANY DEVICE</h2>
+    <div class="msg">Link your devices to share one bank, wardrobe, boosts, streak, level and leaderboard name.</div>
+    <div class="today syncbox">
+      <div class="tven">1. On the device you've been playing on</div>
+      <button class="btn" id="codeBtn">Get a link code</button>
+      <div id="codeOut"></div>
+    </div>
+    <div class="today syncbox">
+      <div class="tven">2. On your other device</div>
+      <input class="tin" id="codeIn" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH">
+      <button class="btn" id="linkBtn">Link this device</button>
+      <div class="hint" id="linkMsg"></div>
+    </div>
+    <button class="btn ghost wide" id="syncClose">Close</button>
+  </div></div>
+
   <div class="ov" id="nick"><div class="inner">
     <div class="kicker">Join the leaderboard</div>
     <h2 class="sm">WETIN BE YOUR NAME?</h2>
@@ -269,7 +293,8 @@ const store={
 let muted=store.get('owambe_muted',false);
 const save=Object.assign({bank:0,owned:[],streak:{last:null,count:0},daily:{key:null,best:0,plays:0},claimed:[],best:store.get('owambe_best',0)},store.get('owambe_save',{}));
 if(save.earned==null) save.earned=save.bank;
-const persist=()=>store.set('owambe_save',save);
+let onPersist=null;
+const persist=(quiet)=>{save.updatedAt=Date.now(); store.set('owambe_save',save); if(!quiet&&onPersist) onPersist();};
 
 const rand=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -1472,7 +1497,7 @@ function startGame(){
     if(save.bank<p.total) return;
     save.bank-=p.total; save.owned.push(...p.items); persist(); sfx.buy();
   }
-  store.set('owambe_look',look); show('wardrobe',false);
+  store.set('owambe_look',look); persist(); show('wardrobe',false);
   initAudio(); newGame(); renderBoostBar(); state='play'; nextT=0; step=0; bar=0; startTrack();
   show('menu',false); show('over',false); show('pause',false); $('#hudbtns').classList.add('show');
   $('#bragTxt').style.display='none'; $('#bragBtn').textContent=mode==='daily'?'Share result':'Copy my brag';
@@ -1563,11 +1588,78 @@ async function onlineInit(){
     let {data}=await sb.auth.getSession(); let session=data.session;
     if(!session){const r=await sb.auth.signInAnonymously(); if(r.error) throw r.error; session=r.data.session;}
     me=session.user;
-    const {data:p}=await sb.from('players').select('nickname').eq('id',me.id).maybeSingle();
-    if(p&&p.nickname){nick=p.nickname; store.set('owambe_nick',nick);} else nick='';
+    onPersist=pushSave;
+    await pullSave();
     document.body.classList.add('online');
     await loadChallenge();
   }catch(e){console.warn('Owambe: playing offline',e); sb=null; document.body.classList.remove('online');}
+}
+let myPid=null, pushT=null;
+function snapshot(){return {save:JSON.parse(JSON.stringify(save)),look:Object.assign({},look),updatedAt:save.updatedAt||Date.now()};}
+function applySave(d){
+  for(const k of Object.keys(save)) delete save[k];
+  Object.assign(save,d.save||{});
+  if(!save.boosts) save.boosts={magnet:0,shield:0,life:0,rain:0};
+  if(save.earned==null) save.earned=save.bank||0;
+  ['owned','claimed'].forEach(k=>{if(!Array.isArray(save[k])) save[k]=[];});
+  if(!save.streak) save.streak={last:null,count:0};
+  if(!save.daily) save.daily={key:null,best:0,plays:0};
+  if(d.look) look=Object.assign({},DEFLOOK,d.look);
+  store.set('owambe_save',save); store.set('owambe_look',look);
+  if(state==='menu') refreshMenu(); if(state==='wardrobe') buildWardrobe();
+}
+async function pullSave(){
+  const {data,error}=await sb.rpc('get_save');
+  if(error||!data){ // database update 002 not installed yet: keep the old behaviour, hide device linking
+    $('#syncBtn').style.display='none'; onPersist=null;
+    const {data:p}=await sb.from('players').select('nickname').eq('id',me.id).maybeSingle();
+    if(p&&p.nickname){nick=p.nickname; store.set('owambe_nick',nick);} return;
+  }
+  myPid=data.player_id; nick=data.nickname||''; store.set('owambe_nick',nick);
+  const srv=data.data;
+  if(srv&&srv.save&&(srv.updatedAt||0)>(save.updatedAt||0)) applySave(srv); else pushSave();
+}
+function pushSave(){ if(!sb) return; clearTimeout(pushT); pushT=setTimeout(()=>{sb.rpc('put_save',{p_data:snapshot()});},1200); }
+async function pushNow(){ clearTimeout(pushT); if(sb) await sb.rpc('put_save',{p_data:snapshot()}); }
+function mergeSaves(a,b){
+  const A=a||{}, B=b||{}, out=Object.assign({},A);
+  out.bank=(A.bank||0)+(B.bank||0);
+  out.earned=(A.earned!=null?A.earned:A.bank||0)+(B.earned!=null?B.earned:B.bank||0);
+  out.best=Math.max(A.best||0,B.best||0);
+  out.owned=[...new Set([...(A.owned||[]),...(B.owned||[])])];
+  out.claimed=[...new Set([...(A.claimed||[]),...(B.claimed||[])])];
+  out.boosts={}; for(const k of Object.keys(BOOSTS)) out.boosts[k]=((A.boosts||{})[k]||0)+((B.boosts||{})[k]||0);
+  const sA=A.streak||{last:null,count:0}, sB=B.streak||{last:null,count:0};
+  out.streak=sA.last===sB.last?{last:sA.last,count:Math.max(sA.count||0,sB.count||0)}:((sB.last||'')>(sA.last||'')?sB:sA);
+  const dA=A.daily||{key:null,best:0,plays:0}, dB=B.daily||{key:null,best:0,plays:0};
+  out.daily=dA.key===dB.key?{key:dA.key,best:Math.max(dA.best||0,dB.best||0),plays:(dA.plays||0)+(dB.plays||0)}:((dB.key||'')>(dA.key||'')?dB:dA);
+  out.updatedAt=Date.now(); return out;
+}
+async function getCode(){
+  const btn=$('#codeBtn'); btn.disabled=true; btn.textContent='Getting code…';
+  await pushNow();
+  const {data,error}=await sb.rpc('create_link_code');
+  btn.disabled=false; btn.textContent='Get a new code';
+  if(error){$('#codeOut').innerHTML=`<div class="hint">${esc(error.message)}</div>`; return;}
+  $('#codeOut').innerHTML=`<div class="code">${data.slice(0,4)}-${data.slice(4)}</div><div class="hint">Type this on your other device within 15 minutes</div>`;
+}
+async function linkDevice(){
+  const v=$('#codeIn').value, m=$('#linkMsg'), btn=$('#linkBtn');
+  if(v.replace(/[^A-Za-z0-9]/g,'').length!==8){m.textContent='Enter the 8-letter code from your other device'; return;}
+  btn.disabled=true; m.textContent='Linking…';
+  const local=JSON.parse(JSON.stringify(save)), localLook=Object.assign({},look), before=myPid;
+  const {data,error}=await sb.rpc('use_link_code',{p_code:v});
+  btn.disabled=false;
+  if(error){m.textContent=/wrong|expired/i.test(error.message)?'That code is wrong or expired. Get a new one.':'Could not link: '+error.message; return;}
+  if(data.player_id===before){m.textContent='✅ This device is already on that account.'; return;}
+  myPid=data.player_id;
+  const {data:sv}=await sb.rpc('get_save');
+  const srv=sv&&sv.data;
+  applySave({save:mergeSaves(srv&&srv.save,local),look:(srv&&srv.look)||localLook});
+  nick=(sv&&sv.nickname)||data.nickname||nick; store.set('owambe_nick',nick);
+  await pushNow();
+  $('#codeIn').value='';
+  m.innerHTML=`✅ Linked${nick?` as <b>${esc(nick)}</b>`:''}! Bank: ${fmt(save.bank)} · ${levelOf(save.earned).name}`;
 }
 async function loadChallenge(){
   const code=new URLSearchParams(location.search).get('c'); if(!code||!sb) return;
@@ -1623,12 +1715,16 @@ async function loadLB(){
   el.innerHTML=data.map(r=>`<div class="lbrow${r.is_me?' me':''}"><span class="rk">${r.rank<=3?['🥇','🥈','🥉'][r.rank-1]:'#'+r.rank}</span><span class="nm">${esc(r.nickname)}${r.outfit?` <small style="color:#a995c4;font-weight:400">· ${esc(r.outfit)}</small>`:''}</span><span class="hl">${fmt(r.haul)}</span></div>`).join('');
 }
 function openLB(){ if(!sb) return; show('lb',true); loadLB(); }
+$('#syncBtn').onclick=()=>{show('sync',true); $('#codeOut').innerHTML=''; $('#linkMsg').textContent='';};
+$('#syncClose').onclick=()=>{show('sync',false); refreshMenu();};
+$('#codeBtn').onclick=getCode; $('#linkBtn').onclick=linkDevice;
+$('#codeIn').addEventListener('keydown',e=>{e.stopPropagation(); if(e.key==='Enter') linkDevice();});
 $('#lbBtn').onclick=openLB; $('#lbBtn2').onclick=openLB; $('#lbClose').onclick=()=>show('lb',false);
 document.querySelectorAll('#lbSeg button').forEach(b=>b.onclick=()=>{lbScope=b.dataset.s; loadLB();});
 $('#chalBtn').onclick=makeChallenge;
 $('#chBtn').onclick=()=>{mode='challenge'; openWardrobe();};
 $('#nickIn').addEventListener('keydown',e=>{e.stopPropagation(); if(e.key==='Enter') $('#nickOk').click();});
-document.addEventListener('visibilitychange',()=>{if(document.hidden) pauseGame(); else if(state==='menu') refreshMenu();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){pauseGame(); if(sb) pushNow();} else if(state==='menu'){refreshMenu(); if(sb) pullSave();}});
 window.addEventListener('keydown',e=>{
   if(g&&g.dance&&state==='play'){const map={'1':'legwork','2':'zanku','3':'shaku','4':'gbese',ArrowLeft:'legwork',ArrowUp:'zanku',ArrowDown:'shaku',ArrowRight:'gbese'}; if(map[e.key]){e.preventDefault(); const b=document.querySelector(`#danceBar button[data-m="${map[e.key]}"]`); if(b){b.classList.add('hit'); setTimeout(()=>b.classList.remove('hit'),120);} danceTap(map[e.key]); return;}}
   if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.l=true;
