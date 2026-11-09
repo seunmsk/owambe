@@ -42,6 +42,11 @@ h2.sm{font-size:clamp(24px,8vw,32px)}
 .today .tbest{font-size:12px;color:#bfa9db;margin-top:8px}
 .today .mod{display:inline-block;margin-top:8px;font-size:12px;font-weight:800;color:#2a0f00;background:#ffc23d;border-radius:999px;padding:3px 10px}
 .pills{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:center}
+.lvl{width:100%;margin:-4px 0 14px;text-align:left}
+.lvlname{font-weight:800;font-size:13px;color:#ffc23d}
+.lvlbar{height:8px;border-radius:5px;background:rgba(255,255,255,.1);margin:5px 0 4px;overflow:hidden}
+.lvlbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff9f1c,#ffc23d,#a6ff7e);border-radius:5px}
+.lvlnext{font-size:11.5px;color:#bfa9db}
 .pill{font-size:13px;font-weight:800;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
 .how{list-style:none;margin:12px 0 4px;display:grid;gap:8px;width:100%;text-align:left}
 .how li{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:8px 12px;font-size:13.5px;line-height:1.25;color:#f3e9ff}
@@ -148,6 +153,7 @@ body:not(.online) .online-only{display:none!important}
       <div class="tbest" id="tBest"></div>
     </div>
     <div class="pills"><span class="pill" id="streakPill">🔥 0-day streak</span><span class="pill" id="bankPill">🏦 ₦0</span></div>
+    <div class="lvl" id="lvlBox"><div class="lvlname" id="lvlName"></div><div class="lvlbar"><i id="lvlFill"></i></div><div class="lvlnext" id="lvlNext"></div></div>
     <button class="btn" id="dailyBtn">Enter today's party</button>
     <button class="btn ghost wide" id="freeBtn">Free party (practice)</button>
     <button class="btn ghost wide online-only" id="lbBtn">🏆 Leaderboard</button>
@@ -251,6 +257,7 @@ const store={
 };
 let muted=store.get('owambe_muted',false);
 const save=Object.assign({bank:0,owned:[],streak:{last:null,count:0},daily:{key:null,best:0,plays:0},claimed:[],best:store.get('owambe_best',0)},store.get('owambe_save',{}));
+if(save.earned==null) save.earned=save.bank;
 const persist=()=>store.set('owambe_save',save);
 
 const rand=(a,b)=>a+Math.random()*(b-a);
@@ -287,6 +294,9 @@ const POWS={
 };
 const RANKS=[[0,'Gate Crasher'],[5000,'Small Chops Hunter'],[20000,'Aso-ebi Squad'],[60000,'Chief Sprayee'],[150000,'Odogwu of the Party'],[400000,'Chairman of the Day']];
 const SKIN='#7a4a2c';
+// Player levels: based on everything you've ever caught (spending doesn't lower it)
+const LEVELS=[[0,'Owambe Beginner'],[30000,'Party Regular'],[120000,'Dance Floor Pro'],[350000,'Big Man in Training'],[800000,'Celebrity Guest'],[2000000,'Owambe Legend'],[5000000,'Owambe Royalty']];
+function levelOf(n){let i=0; for(let k=0;k<LEVELS.length;k++) if(n>=LEVELS[k][0]) i=k; return {i,lv:i+1,name:LEVELS[i][1],next:LEVELS[i+1]||null};}
 
 const VENUES={
   hall:{name:'Event Hall, Surulere',bg:['#1d0b33','#2b0f40','#140820'],can:['#6a1fb0','#f2b134'],glow:'255,140,40',floor:['#40210f','#1a0c06'],lights:['#ffcf5a','#ff6b9d','#7ee0ff','#a6ff7e','#ff9f43'],deco:'drapes',crowd:['rgba(70,25,95,.85)','rgba(48,18,66,.85)']},
@@ -1303,6 +1313,10 @@ function refreshMenu(){
   const sc=streakCount();
   $('#streakPill').textContent=sc?`🔥 ${sc}-day streak`+(save.streak.last===todayKey()?'':' · play today!'):'🔥 Start a streak today';
   $('#bankPill').textContent='🏦 '+fmt(save.bank);
+  const L=levelOf(save.earned);
+  $('#lvlName').textContent=`🎖 Lv ${L.lv} · ${L.name}`;
+  if(L.next){const a=LEVELS[L.i][0],b=L.next[0]; $('#lvlFill').style.width=Math.round((save.earned-a)/(b-a)*100)+'%'; $('#lvlNext').textContent=`${fmt(b-save.earned)} more to ${L.next[1]}`;}
+  else {$('#lvlFill').style.width='100%'; $('#lvlNext').textContent='Top level reached. Respect! 👑';}
 }
 
 // ---------- flow ----------
@@ -1338,7 +1352,8 @@ function startGame(){
 function endGame(){
   state='over'; g.ending=null; stopTrack(); $('#hudbtns').classList.remove('show'); sfx.over();
   const haul=Math.round(g.naira), c=g.cfg, rewards=[];
-  save.bank+=haul;
+  const lvBefore=levelOf(save.earned).i;
+  save.bank+=haul; save.earned+=haul;
   let isBest=false;
   if(c.mode==='daily'){
     if(save.daily.key!==c.key) save.daily={key:c.key,best:0,plays:0};
@@ -1355,6 +1370,8 @@ function endGame(){
       }
     }
   }
+  const LV=levelOf(save.earned);
+  if(LV.i>lvBefore){rewards.push(`🎖 Level up! You're now ${LV.name} (Lv ${LV.lv})`); sfx.power();}
   if(haul>save.best){save.best=haul; if(c.mode!=='daily') isBest=true;}
   persist();
   let rank=RANKS[0][1]; for(const [v,n] of RANKS) if(haul>=v) rank=n;
@@ -1365,12 +1382,12 @@ function endGame(){
   if(c.mode==='challenge'){const diffN=haul-c.target; cr.style.color=diffN>0?'#7ee081':'#ff9f1c'; cr.textContent=diffN>0?`🏆 You beat ${c.rival} by ${fmt(diffN)}!`:diffN===0?`🤝 Dead heat with ${c.rival}!`:`😤 ${c.rival} still dey lead by ${fmt(-diffN)}`;}
   else cr.textContent='';
   $('#chalBtn').textContent='⚔️ Challenge a friend';
-  submitOnline({mode:c.mode,day:c.mode==='daily'?c.key:todayKey(),seed:c.seed,haul,caught:g.caught,combo:g.bestCombo,escaped:g.escaped,duration:Math.round(g.real*10)/10,mc:g.mc.id,outfit:lookName(look),challenge:c.code||null});
+  submitOnline({mode:c.mode,day:c.mode==='daily'?c.key:todayKey(),seed:c.seed,haul,caught:g.caught,combo:g.bestCombo,escaped:g.escaped,duration:Math.round(g.real*10)/10,mc:g.mc.id,outfit:levelOf(save.earned).name,challenge:c.code||null});
   $('#haul').textContent=fmt(haul); $('#rank').textContent=rank;
   $('#newBest').textContent=c.mode==='daily'?'🎉 Your best for today!':'🎉 New all-time best!';
   $('#newBest').style.display=isBest&&haul>0?'block':'none';
   $('#stNotes').textContent=g.caught; $('#stCombo').textContent=g.bestCombo; $('#stAunty').textContent=g.escaped;
-  $('#earn').innerHTML=`<b>+${fmt(haul)}</b> banked · Bank: ${fmt(save.bank)}`;
+  $('#earn').innerHTML=`<b>+${fmt(haul)}</b> banked · Bank: ${fmt(save.bank)}<br><span style="color:#ffc23d;font-weight:800">🎖 Lv ${LV.lv} · ${LV.name}</span>${LV.next?` <span style="color:#bfa9db">· ${fmt(LV.next[0]-save.earned)} to ${LV.next[1]}</span>`:''}`;
   const sc=streakCount();
   $('#streakLine').textContent=c.mode==='daily'?(sc?`🔥 ${sc}-day streak`:''):'Play the daily party to grow your streak 🔥';
   $('#rewards').innerHTML=rewards.map(r=>`<div>${r}</div>`).join('');
