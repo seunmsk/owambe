@@ -5,5 +5,6 @@
 window.OWAMBE_CONFIG = {
   supabaseUrl: 'https://eflplcobmqdrwkgeomas.supabase.co',
   supabaseAnonKey: 'sb_publishable_2uBV1sT08vdL02shCjh5mA_Xoh4YNW2',  // publishable key (safe to be public)
-  siteUrl: 'https://owambe.pages.dev/'  // live address used in share and challenge links
+  siteUrl: 'https://owambe.pages.dev/',  // live address used in share and challenge links
+  gaId: ''              // Google Analytics measurement ID (G-XXXXXXX); empty = off
 };

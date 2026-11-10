@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b0612">
+<title>Owambe Survivor · Stats</title>
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+:root{--gold:#ffc23d;--ink:#fff7e6;--mut:#bba6d6;--card:rgba(255,255,255,.055);--line:rgba(255,255,255,.1);--green:#7ee081;--pink:#ff6b9d;--teal:#4ecdc4}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Outfit,system-ui,sans-serif;background:radial-gradient(120% 60% at 50% 0%,#2b0f40,#0b0612 60%);color:var(--ink);min-height:100vh}
+.wrap{max-width:980px;margin:0 auto;padding:22px 16px 60px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-family:Bungee,Outfit,sans-serif;font-weight:400;color:var(--gold);font-size:26px;line-height:1}
+.sub{color:var(--mut);font-size:13px;margin-top:6px}
+.btn{appearance:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font:800 13px Outfit,sans-serif;padding:9px 14px;border-radius:12px;cursor:pointer}
+.grid{display:grid;gap:12px}
+.kpis{grid-template-columns:repeat(4,1fr)}
+@media(max-width:700px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.k b{display:block;font-size:28px;font-weight:800}
+.k span{font-size:12px;color:var(--mut)}
+.k small{display:block;font-size:12px;color:var(--mut);margin-top:6px}
+.k small i{font-style:normal;color:var(--ink);font-weight:700}
+h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#ff9f1c;font-weight:800;margin:22px 0 10px}
+.two{grid-template-columns:1fr 1fr}
+@media(max-width:700px){.two{grid-template-columns:1fr}}
+.chart{width:100%;height:190px;display:block}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.funnel .row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.funnel .lab{width:120px;font-size:13px;color:var(--mut)}
+.funnel .bar{flex:1;height:22px;border-radius:7px;background:rgba(255,255,255,.07);overflow:hidden}
+.funnel .bar i{display:block;height:100%;background:linear-gradient(90deg,#ff9f1c,#ffc23d)}
+.funnel .num{width:90px;text-align:right;font-weight:800;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+td.r,th.r{text-align:right}
+.feed td{font-size:12.5px}
+.pill{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.1)}
+.lock{max-width:360px;margin:12vh auto 0;text-align:center}
+.lock input{width:100%;margin:16px 0 10px;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:800 18px Outfit,sans-serif;text-align:center;letter-spacing:.1em;text-transform:uppercase}
+.lock .go{width:100%;padding:14px;border-radius:14px;border:0;background:linear-gradient(180deg,#ffd76a,#ffb21f);color:#2a0f00;font:800 16px Outfit,sans-serif;cursor:pointer}
+.err{color:var(--pink);font-size:13px;min-height:18px;margin-top:8px}
+.empty{color:var(--mut);font-size:13px;padding:8px 0}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="lock" class="lock">
+    <h1>OWAMBE STATS</h1>
+    <div class="sub">Private dashboard. Enter your passcode.</div>
+    <input id="code" placeholder="OWB-XXXXXX" autocomplete="off" autocapitalize="characters">
+    <button class="go" id="go">Open dashboard</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div id="dash" class="hidden">
+    <header>
+      <div><h1>OWAMBE STATS</h1><div class="sub" id="upd">Loading…</div></div>
+      <div style="display:flex;gap:8px"><button class="btn" id="refresh">↻ Refresh</button><button class="btn" id="logout">Lock</button></div>
+    </header>
+
+    <h2>Today</h2>
+    <div class="grid kpis" id="today"></div>
+    <h2>Last 7 days</h2>
+    <div class="grid kpis" id="week"></div>
+
+    <h2>Daily activity (14 days)</h2>
+    <div class="card"><svg class="chart" id="chart" viewBox="0 0 900 190" preserveAspectRatio="none"></svg>
+      <div class="legend"><span><i style="background:#ffc23d"></i>Visitors</span><span><i style="background:#7ee081"></i>Players</span><span><i style="background:#ff6b9d"></i>Games finished</span></div></div>
+
+    <div class="grid two">
+      <div><h2>Funnel (7 days)</h2><div class="card funnel" id="funnel"></div></div>
+      <div><h2>Where visitors came from (7 days)</h2><div class="card" id="sources"></div></div>
+    </div>
+    <div class="grid two">
+      <div><h2>Links: main site vs MC editions (7 days)</h2><div class="card" id="links"></div></div>
+      <div><h2>Game modes (7 days)</h2><div class="card" id="modes"></div></div>
+    </div>
+    <div class="grid two">
+      <div><h2>Top purchases (7 days)</h2><div class="card" id="buys"></div></div>
+      <div><h2>Top players (all time)</h2><div class="card" id="players"></div></div>
+    </div>
+    <h2>Live activity</h2>
+    <div class="card"><table class="feed" id="feed"></table></div>
+  </div>
+</div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const CFG=window.OWAMBE_CONFIG||{};
+const fmtN=n=>(n==null?'–':Number(n).toLocaleString('en-NG'));
+const fmtM=n=>(n==null?'–':'₦'+Math.round(n).toLocaleString('en-NG'));
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct=(a,b)=>b?Math.round(a/b*100)+'%':'–';
+let sb=null, code='', timer=null;
+function store(k,v){try{v===undefined?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}
+function load(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function loadScript(src){return new Promise((res,rej)=>{const el=document.createElement('script');el.src=src;el.onload=res;el.onerror=rej;document.head.appendChild(el);});}
+async function client(){
+  if(sb) return sb;
+  if(!CFG.supabaseUrl||!CFG.supabaseAnonKey) throw new Error('Supabase is not configured in config.js');
+  if(!window.supabase) await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js');
+  sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey,{auth:{persistSession:false}});
+  return sb;
+}
+async function fetchStats(){
+  const c=await client();
+  const {data,error}=await c.rpc('get_stats',{p_code:code,p_days:14});
+  if(error) throw new Error(/passcode/i.test(error.message)?'Wrong passcode':/get_stats/i.test(error.message)?'Run supabase/003_stats.sql in Supabase first':error.message);
+  return data;
+}
+function kpi(label,val,sub){return `<div class="card k"><b>${val}</b><span>${label}</span>${sub?`<small>${sub}</small>`:''}</div>`;}
+function table(rows,cols,empty){
+  if(!rows||!rows.length) return `<div class="empty">${empty||'No data yet.'}</div>`;
+  return `<table><tr>${cols.map(c=>`<th class="${c.r?'r':''}">${c.h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${cols.map(c=>`<td class="${c.r?'r':''}">${c.f?c.f(r):esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</table>`;
+}
+const MODE={daily:'Daily party',free:'Free practice',ladder:'Ladder',challenge:'Challenge'};
+const KIND={visit:'👀 Visit',game_start:'▶️ Started',game_end:'🏁 Finished',dance_end:'💃🏾 Dance-off',buy:'🛍️ Bought',share:'📣 Shared',challenge_create:'⚔️ Challenge sent',challenge_accept:'⚔️ Challenge accepted',task_done:'🎯 Task done',stage_clear:'🪜 Stage cleared',souvenir:'🎁 Souvenir',link_device:'📱 Linked device',nickname_set:'✍️ Named'};
+function itemName(k){ if(!k) return '?'; const [t,id]=k.split(':'); const map={outfit:'Outfit',hat:'Headwear',shoe:'Footwear',acc:'Accessory',fab:'Fabric',boost:'Boost'}; return `${map[t]||t}: ${id}`; }
+function ago(t){const s=Math.round((Date.now()-new Date(t))/1000); if(s<60) return s+'s ago'; if(s<3600) return Math.round(s/60)+'m ago'; if(s<86400) return Math.round(s/3600)+'h ago'; return Math.round(s/86400)+'d ago';}
+function chart(daily){
+  const el=$('#chart'), W=900, H=190, pad=24, days=[];
+  const map={}; for(const d of daily) map[d.d]=d;
+  const now=new Date(new Date().toLocaleString('en-US',{timeZone:'Africa/Lagos'}));
+  for(let i=13;i>=0;i--){const d=new Date(now); d.setDate(d.getDate()-i); const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); days.push({k,lab:d.getDate(),...(map[k]||{v:0,p:0,g:0})});}
+  const mx=Math.max(1,...days.map(d=>Math.max(d.v,d.p,d.g)));
+  const bw=(W-pad*2)/14, out=[];
+  days.forEach((d,i)=>{const x=pad+i*bw, sc=v=>(H-30)*(v/mx);
+    [['v','#ffc23d',0],['p','#7ee081',1],['g','#ff6b9d',2]].forEach(([k,col,j])=>{const h=sc(d[k]); out.push(`<rect x="${x+4+j*(bw-8)/3}" y="${H-20-h}" width="${(bw-8)/3-2}" height="${Math.max(h,1)}" rx="3" fill="${col}"><title>${d.k}: ${d[k]}</title></rect>`);});
+    out.push(`<text x="${x+bw/2}" y="${H-5}" fill="#bba6d6" font-size="11" text-anchor="middle">${d.lab}</text>`);});
+  out.push(`<text x="${pad}" y="12" fill="#bba6d6" font-size="11">max ${mx}</text>`);
+  el.innerHTML=out.join('');
+}
+function render(s){
+  const t=s.today||{}, w=s.week||{}, a=s.all||{};
+  $('#upd').textContent=`Updated ${new Date(s.generated_at).toLocaleTimeString()} · refreshes every minute · all time: ${fmtN(a.visitors)} visitors, ${fmtN(a.players)} players, ${fmtN(a.games)} games`;
+  $('#today').innerHTML=kpi('Visitors',fmtN(t.visitors))+kpi('Players',fmtN(t.players),`${pct(t.players,t.visitors)} of visitors played`)+kpi('Games played',fmtN(t.games))+kpi('Shares & challenges',fmtN(t.shares));
+  $('#week').innerHTML=kpi('Visitors',fmtN(w.visitors),`<i>${fmtN(s.returning)}</i> came back on another day · <i>${pct(w.mobile,w.visitors)}</i> on phones`)
+    +kpi('Players',fmtN(w.players),`<i>${fmtN(s.named_players)}</i> have a leaderboard name`)
+    +kpi('Games played',fmtN(w.games),`avg ${fmtM(w.avg_haul)} · ${w.avg_secs?Math.round(w.avg_secs/60*10)/10+' min':'–'} per game`)
+    +kpi('Best haul',fmtM(w.best_haul),`dance-offs won: <i>${fmtN(w.dance_wins)}</i> of ${fmtN(w.dances)}`);
+  chart(s.daily||[]);
+  const steps=[['Visited',w.visitors],['Started a party',w.players],['Finished a party',w.finished],['Shared or challenged',w.sharers]], top=Math.max(1,w.visitors||0);
+  $('#funnel').innerHTML=steps.map(([l,n])=>`<div class="row"><div class="lab">${l}</div><div class="bar"><i style="width:${Math.round((n||0)/top*100)}%"></i></div><div class="num">${fmtN(n)} <span style="color:#bba6d6;font-weight:600">${pct(n||0,top)}</span></div></div>`).join('');
+  $('#sources').innerHTML=table(s.sources,[{h:'Source',k:'name'},{h:'Visitors',k:'n',r:1}]);
+  $('#links').innerHTML=table(s.links,[{h:'Link',f:r=>r.name==='main site'?'owambe.pages.dev':'/'+esc(r.name)},{h:'Visitors',k:'visitors',r:1},{h:'Games',k:'games',r:1}]);
+  $('#modes').innerHTML=table(s.modes,[{h:'Mode',f:r=>MODE[r.name]||esc(r.name)},{h:'Games',k:'n',r:1}]);
+  $('#buys').innerHTML=table(s.buys,[{h:'Item',f:r=>esc(itemName(r.name))},{h:'Times',k:'n',r:1},{h:'Naira spent',f:r=>fmtM(r.naira),r:1}],'No purchases yet.');
+  $('#players').innerHTML=table(s.top_players,[{h:'Player',k:'name'},{h:'Best',f:r=>fmtM(r.best),r:1},{h:'Games',k:'games',r:1}],'No scores yet.');
+  $('#feed').innerHTML=(s.recent&&s.recent.length)?s.recent.map(e=>`<tr><td style="white-space:nowrap;color:#bba6d6">${ago(e.at)}</td><td>${KIND[e.kind]||esc(e.kind)}</td><td>${e.mode?`<span class="pill">${esc(MODE[e.mode]||e.mode)}</span>`:''} ${e.mc?`<span class="pill">/${esc(e.mc)}</span>`:''}</td><td>${e.kind==='buy'?esc(itemName(e.info)):esc(e.info||'')}</td><td class="r">${e.value!=null?(e.kind==='stage_clear'?'Stage '+e.value:fmtM(e.value)):''}</td><td>${e.mobile?'📱':'💻'}</td></tr>`).join(''):'<tr><td class="empty">No activity yet.</td></tr>';
+}
+async function open(){
+  $('#err').textContent=''; $('#go').disabled=true; $('#go').textContent='Opening…';
+  try{ const s=await fetchStats(); store('owambe_stats_code',code); $('#lock').classList.add('hidden'); $('#dash').classList.remove('hidden'); render(s);
+    clearInterval(timer); timer=setInterval(async()=>{try{render(await fetchStats())}catch(e){}},60000);
+  }catch(e){ $('#err').textContent=e.message; store('owambe_stats_code'); }
+  $('#go').disabled=false; $('#go').textContent='Open dashboard';
+}
+$('#go').onclick=()=>{code=$('#code').value.trim().toUpperCase(); if(code) open();};
+$('#code').addEventListener('keydown',e=>{if(e.key==='Enter') $('#go').click();});
+$('#refresh').onclick=async()=>{try{render(await fetchStats())}catch(e){alert(e.message)}};
+$('#logout').onclick=()=>{store('owambe_stats_code'); clearInterval(timer); location.reload();};
+const saved=load('owambe_stats_code'); if(saved){code=saved; open();}
+})();
+</script>
+</body>
+</html>

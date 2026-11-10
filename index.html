@@ -12,6 +12,7 @@
 <meta property="og:description" content="Catch the naira, dodge the aunties, win the dance-off. New party every day.">
 <link rel="manifest" href="manifest.webmanifest">
 <script src="config.js"></script>
+<script>(function(){var id=(window.OWAMBE_CONFIG||{}).gaId;if(!id)return;var s=document.createElement('script');s.async=1;s.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(s);window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',id);})();</script>
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -265,6 +266,7 @@ body:not(.online) .online-only{display:none!important}
       <li><span class="ic">🔥</span><span><b>A new party every day.</b> Keep your streak for rewards</span></li>
     </ul>
     <button class="btn" id="howClose" style="margin-top:14px">Got it</button>
+    <a href="privacy" style="margin-top:14px;font-size:12px;color:#a995c4">Privacy</a>
   </div></div>
 
   <div class="ov" id="wardrobe"><div class="inner wd">
@@ -1042,7 +1044,7 @@ function updateDance(dt){
       d.phase='result'; d.rt=0; $('#danceBar').classList.remove('show');
       const pay=Math.round((d.perfect*1500+d.good*700)*(.5+d.hype/100)*g.money);
       d.pay=pay; g.naira+=pay; g.pulse=1;
-      const win=d.hype>=60; if(win) g.danceWins++;
+      const win=d.hype>=60; if(win) g.danceWins++; track('dance_end',{mode:g.cfg.mode,value:pay,info:win?'win':'lose'});
       floatText(W/2,H*.44,win?`Crowd sprayed you ${fmt(pay)}! 💸`:`Small spray: ${fmt(pay)}`,win?'#ffc23d':'#e8d5ff',true);
       mcSay(win?'dance_win':'dance_lose',true);
       if(win){ sfx.power(); g.storm=0; }
@@ -1804,7 +1806,7 @@ function buildWardrobe(){
     $('#boostSub').textContent='Buy now, tap them during the party when you need them';
     for(const[k,B] of Object.entries(BOOSTS)){const b=document.createElement('button'); b.className='chip'; const n=save.boosts[k]||0;
       b.innerHTML=`${B.e} ${B.n}<small>${B.d} · ${fmtK(B.p)}${n?` · <b style="color:#7ee081">you have ${n}</b>`:''}</small>`;
-      b.onclick=()=>{ if(save.bank<B.p){$('#wHint').textContent=`You need ${fmt(B.p-save.bank)} more for ${B.n}`; return;} save.bank-=B.p; save.boosts[k]=n+1; persist(); sfx.buy(); buildWardrobe(); $('#wHint').textContent=`✓ ${B.n} added. Tap it during the party.`;};
+      b.onclick=()=>{ if(save.bank<B.p){$('#wHint').textContent=`You need ${fmt(B.p-save.bank)} more for ${B.n}`; return;} save.bank-=B.p; save.boosts[k]=n+1; track('buy',{info:'boost:'+k,value:B.p}); persist(); sfx.buy(); buildWardrobe(); $('#wHint').textContent=`✓ ${B.n} added. Tap it during the party.`;};
       bc.appendChild(b);}
     showRow('row_boost',true);
   } else { $('#boostSub').textContent='You have: '+have; showRow('row_boost',!!have); }
@@ -1895,7 +1897,7 @@ function frame(t){
 function show(id,on){$('#'+id).classList.toggle('show',on);}
 function hasLook(){ return store.get('owambe_look',null)!=null; }
 function play(m){ mode=m; if(!hasLook()||pendingItems().items.length){ openWardrobe('start'); return; } startGame(); }
-function buyPending(){ const p=pendingItems(); if(!p.items.length) return true; if(save.bank<p.total) return false; save.bank-=p.total; save.owned.push(...p.items); persist(); sfx.buy(); return true; }
+function buyPending(){ const p=pendingItems(); if(!p.items.length) return true; if(save.bank<p.total) return false; save.bank-=p.total; save.owned.push(...p.items); for(const k of p.items) track('buy',{info:k,value:itemPrice(k)}); persist(); sfx.buy(); return true; }
 function saveLook(){ store.set('owambe_look',look); savedLook=JSON.parse(JSON.stringify(look)); persist(); }
 function closeWardrobe(){ show('wardrobe',false); if(wFrom==='over'&&g){ state='over'; show('over',true); } else goHome(); }
 function openWardrobe(kind,from){
@@ -1907,7 +1909,8 @@ function openWardrobe(kind,from){
 function startGame(){
   if(!buyPending()) return;
   saveLook(); show('wardrobe',false);
-  initAudio(); newGame(); renderBoostBar(); state='play'; nextT=0; step=0; bar=0; startTrack();
+  initAudio(); newGame(); renderBoostBar(); state='play';
+  track('game_start',{mode:g.cfg.mode,venue:g.cfg.venue}); nextT=0; step=0; bar=0; startTrack();
   show('menu',false); show('over',false); show('pause',false); $('#hudbtns').classList.add('show');
   $('#bragTxt').style.display='none'; setLbl($('#bragBtn'),'Share');
 }
@@ -1933,16 +1936,17 @@ function endGame(){
     }
   }
   if(c.mode==='ladder'){
-    if(g.cleared){save.stage=c.stage+1; save.bank+=c.reward; rewards.push(`🪜 Stage ${c.stage} cleared! +${fmt(c.reward)} · Stage ${c.stage+1} unlocked`);}
+    if(g.cleared){track('stage_clear',{mode:'ladder',value:c.stage}); save.stage=c.stage+1; save.bank+=c.reward; rewards.push(`🪜 Stage ${c.stage} cleared! +${fmt(c.reward)} · Stage ${c.stage+1} unlocked`);}
     else rewards.push(`🪜 Stage ${c.stage}: ${fmt(haul)} of ${fmt(c.target)}. So close, try again!`);
   }
   // daily tasks
   const TK=todayTasks();
   for(const t of TK.list){ if(t.done) continue; const T=TASKS.find(x=>x.id===t.id), v=T.get(g,haul);
     t.prog=T.kind==='best'?Math.max(t.prog,v):t.prog+v;
-    if(t.prog>=t.n){t.done=true; save.bank+=t.reward; rewards.push(`🎯 Task done: ${taskText(t)} · +${fmt(t.reward)}`);} }
+    if(t.prog>=t.n){t.done=true; save.bank+=t.reward; track('task_done',{info:t.id,value:t.reward}); rewards.push(`🎯 Task done: ${taskText(t)} · +${fmt(t.reward)}`);} }
   // souvenir bag
   g.souv=haul>=3000?rollSouvenir(haul):null;
+  track('game_end',{mode:c.mode,venue:c.venue,value:haul,secs:g.real,info:(g.why||'').slice(0,40)});
   const LV=levelOf(save.earned);
   if(LV.i>lvBefore){rewards.push(`🎖 Level up! You're now ${LV.name} (Lv ${LV.lv})`); sfx.power();}
   if(haul>save.best){save.best=haul; if(c.mode!=='daily') isBest=true;}
@@ -1986,7 +1990,7 @@ function rollSouvenir(haul){
 $('#souvBtn').onclick=()=>{
   if(!g||!g.souv||g.souvOpened) return; g.souvOpened=true;
   const sb=$('#souvBtn'), stx=$('#souvTxt'); sb.classList.add('open'); sb.textContent=g.souv.e; sfx.power(); buzz(40);
-  stx.textContent=g.souv.t; if(g.souv.rare) stx.classList.add('rare');
+  track('souvenir',{info:g.souv.t}); stx.textContent=g.souv.t; if(g.souv.rare) stx.classList.add('rare');
 };
 function pauseGame(){ if(state!=='play'||g.ending!=null) return; state='pause'; show('pause',true); if(trackEl) trackEl.pause(); $('#danceBar').classList.remove('show'); }
 function resumeGame(){ if(state!=='pause') return; initAudio(); state='play'; show('pause',false); last=performance.now(); if(trackEl) trackEl.play().catch(()=>{}); if(g&&g.dance&&g.dance.phase==='play') $('#danceBar').classList.add('show'); }
@@ -2019,6 +2023,7 @@ $('#bragBtn').onclick=async()=>{
   const txt=c.mode==='daily'
     ? `Owambe Survivor #${c.num} 🎉\n💸 ${$('#haul').textContent} · ${g.rank}\n👵🏾 Dodged ${g.escaped} aunties${sc?` · 🔥 ${sc}-day streak`:''}\n👗 ${lookName(look)} · 🎤 ${g.mc.name}\nCan you beat me?`
     : `I went home with ${$('#haul').textContent} on Owambe Survivor 💸, rocking my ${lookName(look)} (${g.rank}). Can you beat me?`;
+  track('share',{mode:c.mode,value:Math.round(g.naira)});
   await shareText(sb?txt+'\n'+siteUrl():txt,$('#bragBtn'));
 };
 const setLbl=(b,t)=>{const e=b.querySelector('em'); (e||b).textContent=t;};
@@ -2026,6 +2031,25 @@ async function shareText(txt,btn){
   if(navigator.share){try{await navigator.share({text:txt}); return;}catch(e){if(e&&e.name==='AbortError') return;}}
   try{await navigator.clipboard.writeText(txt); setLbl(btn,'Copied ✓');}
   catch(e){const b=$('#bragTxt'); b.textContent=txt; b.style.display='block'; setLbl(btn,'Copy below');}
+}
+
+// ---------- analytics: anonymous events for the private /stats page (+ Google Analytics if configured)
+const DEV_ID=(()=>{let d=store.get('owambe_dev',null); if(!d){d=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4); store.set('owambe_dev',d);} return d;})();
+const IS_MOBILE=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+const LINK_MC=FORCED_MC?FORCED_MC.id:null;
+let evQ=[];
+function track(kind,o){
+  o=o||{};
+  const e={p_device:DEV_ID,p_kind:kind,p_mode:o.mode||null,p_mc:LINK_MC,p_venue:o.venue||null,p_value:o.value!=null?Math.round(o.value):null,p_info:o.info!=null?String(o.info).slice(0,80):null,p_mobile:IS_MOBILE,p_secs:o.secs!=null?Math.round(o.secs):null};
+  if(sb){ try{ sb.rpc('log_event',e).then(()=>{},()=>{}); }catch(_){} } else if(evQ.length<30) evQ.push(e);
+  try{ if(window.gtag) gtag('event',kind,{mode:o.mode,value:o.value,info:o.info,link:LINK_MC||'main'}); }catch(_){}
+}
+function flushEvents(){ if(!sb) return; const q=evQ; evQ=[]; for(const e of q){ try{ sb.rpc('log_event',e).then(()=>{},()=>{}); }catch(_){} } }
+function trackVisit(){
+  let src='direct';
+  try{ const qp=new URLSearchParams(location.search); const r=document.referrer?new URL(document.referrer).hostname.replace(/^www\./,''):'';
+    if(qp.get('ref')) src=qp.get('ref'); else if(qp.get('c')) src='challenge link'; else if(r&&r!==location.hostname) src=/whatsapp/.test(r)?'whatsapp':/instagram/.test(r)?'instagram':/facebook|fb\./.test(r)?'facebook':/t\.co|twitter|x\.com/.test(r)?'x/twitter':/google/.test(r)?'google':r; }catch(_){}
+  track('visit',{info:src});
 }
 
 // ---------- online: Supabase (only when config.js has keys; otherwise the game runs offline) ----------
@@ -2044,6 +2068,7 @@ async function onlineInit(){
     if(!session){const r=await sb.auth.signInAnonymously(); if(r.error) throw r.error; session=r.data.session;}
     me=session.user;
     onPersist=pushSave;
+    flushEvents();
     await pullSave();
     document.body.classList.add('online');
     await loadChallenge();
@@ -2107,6 +2132,7 @@ async function linkDevice(){
   const {data,error}=await sb.rpc('use_link_code',{p_code:v});
   btn.disabled=false;
   if(error){m.textContent=/wrong|expired/i.test(error.message)?'That code is wrong or expired. Get a new one.':'Could not link: '+error.message; return;}
+  track('link_device');
   if(data.player_id===before){m.textContent='✅ This device is already on that account.'; return;}
   myPid=data.player_id;
   const {data:sv}=await sb.rpc('get_save');
@@ -2137,7 +2163,7 @@ function askNick(){
       const {data,error}=await sb.rpc('set_nickname',{p_nick:v});
       $('#nickOk').disabled=false;
       if(error){$('#nickErr').textContent=/taken/i.test(error.message)?'That name don dey used. Try another one.':'Could not save. Check your network.'; return;}
-      nick=data; store.set('owambe_nick',nick); show('nick',false); res(true);
+      nick=data; store.set('owambe_nick',nick); track('nickname_set'); show('nick',false); res(true);
     };
     $('#nickSkip').onclick=()=>{show('nick',false); res(false);};
   });
@@ -2158,7 +2184,7 @@ async function makeChallenge(){
   if(!nick) await askNick();
   const {data,error}=await sb.rpc('create_challenge',{p_mode:c.mode==='daily'?'daily':'free',p_day:c.key||todayKey(),p_seed:c.seed,p_venue:c.venue,p_mod:c.mod.id,p_mc:c.mc.id,p_haul:Math.round(g.naira)});
   if(error){setLbl(btn,'Try again'); return;}
-  setLbl(btn,'Challenge');
+  setLbl(btn,'Challenge'); track('challenge_create',{mode:c.mode,value:Math.round(g.naira)});
   const url=baseUrl()+'?c='+data+(FORCED_MC?'&mc='+FORCED_MC.id:'');
   await shareText(`I went home with ${fmt(g.naira)} from the owambe 💸 Same party, same money. Can you beat me? ${url}`,btn);
 }
@@ -2178,7 +2204,7 @@ $('#codeIn').addEventListener('keydown',e=>{e.stopPropagation(); if(e.key==='Ent
 $('#lbBtn').onclick=openLB; $('#lbBtn2').onclick=openLB; $('#lbClose').onclick=()=>show('lb',false);
 document.querySelectorAll('#lbSeg button').forEach(b=>b.onclick=()=>{lbScope=b.dataset.s; loadLB();});
 $('#chalBtn').onclick=makeChallenge;
-$('#chBtn').onclick=()=>play('challenge');
+$('#chBtn').onclick=()=>{track('challenge_accept'); play('challenge');};
 $('#nickIn').addEventListener('keydown',e=>{e.stopPropagation(); if(e.key==='Enter') $('#nickOk').click();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){pauseGame(); if(sb) pushNow();} else if(state==='menu'){refreshMenu(); if(sb) pullSave();}});
 window.addEventListener('keydown',e=>{
@@ -2208,6 +2234,7 @@ setMute(muted);
 curVenue=dailyCfg().venue;
 resize();
 refreshMenu();
+trackVisit();
 onlineInit();
 requestAnimationFrame(frame);
 })();
