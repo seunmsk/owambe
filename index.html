@@ -36,7 +36,6 @@ h2{font-family:Bungee,Outfit,sans-serif;font-weight:400;font-size:clamp(30px,9.5
 h2.sm{font-size:clamp(24px,8vw,32px)}
 .sub{margin-top:8px;font-weight:600;font-size:15px;color:#e8d5ff;letter-spacing:.04em}
 .today{margin:18px 0 10px;width:100%;border-radius:18px;padding:14px 16px;text-align:left;background:linear-gradient(135deg,rgba(255,194,61,.16),rgba(123,44,191,.22));border:1px solid rgba(255,194,61,.35);position:relative;overflow:hidden}
-.today.withav .tnum,.today.withav .tven,.today.withav .tmeta{padding-right:72px}
 .today .tnum{font-family:Bungee,Outfit,sans-serif;font-size:18px;color:var(--gold)}
 .today .tven{font-weight:800;font-size:15px;margin-top:4px;color:#fff}
 .today .tmeta{font-size:13px;color:#e3d2fa;margin-top:3px}
@@ -89,6 +88,29 @@ details.howto summary::-webkit-details-marker{display:none}
 .mylook .lkt{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#ff9f1c}
 .mylook .lkn{font-size:13px;color:#f3e9ff;font-weight:600;margin-top:2px;line-height:1.25}
 .mylook .btn.ghost{padding:10px 12px;font-size:13px;flex:none}
+.home{gap:0}
+.topbar{display:flex;gap:6px;width:100%;margin-bottom:14px}
+.tb{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;background:rgba(10,4,18,.65);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:7px 8px;font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tblv{flex:1.5;align-items:stretch;text-align:left;color:#ffc23d}
+.tblv small{display:block;font-size:10.5px;font-weight:700;color:#e8d5ff;overflow:hidden;text-overflow:ellipsis}
+.home.haschal .stagebtn,.home.haschal .stagebtn canvas{width:150px;height:150px}
+.tblv .lvlbar{height:4px;margin:4px 0 0}
+h1.logo{font-size:clamp(28px,9.5vw,40px);line-height:1}
+.stagebtn{appearance:none;border:0;background:radial-gradient(closest-side,rgba(255,180,70,.32),rgba(255,180,70,0));width:200px;height:200px;margin:4px 0 0;cursor:pointer;position:relative;padding:0}
+.stagebtn canvas{width:200px;height:200px;display:block}
+.tapme{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);white-space:nowrap;font:700 12px Outfit,sans-serif;color:#e8d5ff;background:rgba(10,4,18,.7);border:1px solid rgba(255,255,255,.15);padding:4px 10px;border-radius:999px}
+.party{position:relative;width:100%;text-align:left;background:rgba(10,4,18,.6);border:1px solid rgba(255,194,61,.3);border-radius:16px;padding:12px 14px;margin:10px 0 12px}
+.party.withav .pnum,.party.withav .pmeta{padding-right:60px}
+.pnum{font-family:Bungee,Outfit,sans-serif;font-size:17px;color:var(--gold)}
+.pmeta{font-size:13px;color:#e8d5ff;margin-top:3px}
+.prow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.prow .mod{margin:0;display:inline-block;font-size:12px;font-weight:800;color:#2a0f00;background:#ffc23d;border-radius:999px;padding:3px 10px}
+.pbest{font-size:12px;color:#bfa9db}
+.btn.big{font-size:20px;padding:17px 20px}
+.dock{display:flex;justify-content:center;gap:4px;width:100%;margin-top:14px}
+.dock button{appearance:none;flex:1;max-width:80px;background:none;border:0;color:#e8d5ff;font:700 11px Outfit,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0}
+.dock button span{width:46px;height:46px;border-radius:14px;background:rgba(10,4,18,.65);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:21px}
+#howto{background:radial-gradient(120% 70% at 50% 30%,#230c37,#06020c);z-index:7}
 .lblsub{align-self:flex-start;font-size:11.5px;color:#a995c4;margin:-3px 0 6px;text-align:left}
 .dbar{position:absolute;left:10px;right:10px;bottom:14px;display:none;grid-template-columns:repeat(4,1fr);gap:8px;z-index:4}
 .dbar.show{display:grid;animation:fade .3s ease}
@@ -155,42 +177,55 @@ body:not(.online) .online-only{display:none!important}
     <button data-m="gbese" style="--c:#a6ff7e"><span>💥</span>Gbese</button>
   </div>
 
-  <div class="ov show" id="menu"><div class="inner">
-    <div class="kicker">A Lagos party arcade</div>
-    <h1>OWAMBE<br>SURVIVOR</h1>
-    <div class="sub">Naira Rain Edition 💸</div>
+  <div class="ov show" id="menu"><div class="inner home">
+    <div class="topbar">
+      <div class="tb tblv" title="Your level"><span id="lvlName">🎖 Lv 1</span><div class="lvlbar"><i id="lvlFill"></i></div><span id="lvlNext" hidden></span></div>
+      <div class="tb" id="streakPill" title="Daily streak">🔥 0</div>
+      <div class="tb" id="bankPill" title="Your bank">🏦 ₦0</div>
+    </div>
+    <div class="kicker" id="homeKicker">A Lagos party arcade</div>
+    <h1 class="logo">OWAMBE SURVIVOR</h1>
     <div class="today chcard" id="chCard" style="display:none">
       <div class="chtxt" id="chTxt"></div>
       <div class="tmeta" id="chMeta"></div>
       <button class="btn" id="chBtn">Accept the challenge</button>
     </div>
-    <div class="today" id="todayCard">
-      <canvas id="mcAv" style="display:none;position:absolute;right:12px;top:12px;width:64px;height:64px"></canvas>
-      <div class="tnum" id="tNum">Today's Owambe #1</div>
-      <div class="tven" id="tVen"></div>
-      <div class="tmeta" id="tMC"></div>
-      <div class="mod" id="tMod"></div>
-      <div class="tbest" id="tBest"></div>
+    <button class="stagebtn" id="lookStage" aria-label="Change outfit">
+      <canvas id="lookAv"></canvas>
+      <span class="tapme">👗 Tap to change outfit</span>
+    </button>
+    <div class="party" id="todayCard">
+      <canvas id="mcAv" style="display:none;position:absolute;right:10px;top:10px;width:52px;height:52px"></canvas>
+      <div class="pnum" id="tNum">Today's Owambe #1</div>
+      <div class="pmeta" id="tVen"></div>
+      <div class="pmeta" id="tMC"></div>
+      <div class="prow"><span class="mod" id="tMod"></span><span class="pbest" id="tBest"></span></div>
     </div>
-    <div class="pills"><span class="pill" id="streakPill">🔥 0-day streak</span><span class="pill" id="bankPill">🏦 ₦0</span></div>
-    <div class="lvl" id="lvlBox"><div class="lvlname" id="lvlName"></div><div class="lvlbar"><i id="lvlFill"></i></div><div class="lvlnext" id="lvlNext"></div></div>
-    <div class="mylook"><canvas id="lookAv"></canvas><div class="lk"><div class="lkt">Your look</div><div class="lkn" id="lookName"></div></div><button class="btn ghost" id="lookBtn">👗 Wardrobe</button></div>
-    <button class="btn" id="dailyBtn">Enter today's party</button>
-    <button class="btn ghost wide" id="freeBtn">Free party (practice)</button>
-    <button class="btn ghost wide online-only" id="lbBtn">🏆 Leaderboard</button>
-    <button class="btn ghost wide online-only" id="syncBtn">📱 Play on another device</button>
-    <details class="howto"><summary>How to play ▾</summary>
-      <ul class="how">
-        <li><span class="ic">💵</span><span><b>Catch the naira</b> as the big men spray</span></li>
-        <li><span class="ic">🚫</span><span><b>₦5000 note no dey exist.</b> Avoid the fakes</span></li>
-        <li><span class="ic">👵🏾</span><span><b>Dodge the aunties</b> and their questions</span></li>
-        <li><span class="ic">🍩</span><span><b>Grab small chops</b> for power-ups</span></li>
-        <li><span class="ic">💃🏾</span><span><b>Dance-off!</b> When the MC calls you, tap the move on the beat</span></li>
-        <li><span class="ic">🏦</span><span><b>Everything you catch is banked.</b> Spend it on new outfits</span></li>
-        <li><span class="ic">🔥</span><span><b>A new party every day.</b> Keep your streak for rewards</span></li>
-      </ul>
-    </details>
-    <div class="ctl">Drag left &amp; right to move · ← → on keyboard</div>
+    <button class="btn big" id="dailyBtn">▶ PLAY TODAY'S PARTY</button>
+    <div class="dock">
+      <button id="freeBtn"><span>🎉</span>Practice</button>
+      <button id="lookBtn"><span>👗</span>Wardrobe</button>
+      <button id="lbBtn" class="online-only"><span>🏆</span>Ranks</button>
+      <button id="syncBtn" class="online-only"><span>📱</span>Devices</button>
+      <button id="howBtn"><span>❓</span>How to play</button>
+    </div>
+    <div id="lookName" hidden></div>
+  </div></div>
+
+  <div class="ov" id="howto"><div class="inner">
+    <div class="kicker">How to play</div>
+    <h2 class="sm">SURVIVE THE OWAMBE</h2>
+    <ul class="how">
+      <li><span class="ic">👆🏾</span><span><b>Drag left &amp; right</b> to move (← → on a keyboard)</span></li>
+      <li><span class="ic">💵</span><span><b>Catch the naira</b> as the big men spray</span></li>
+      <li><span class="ic">🚫</span><span><b>₦5000 note no dey exist.</b> Avoid the fakes</span></li>
+      <li><span class="ic">👵🏾</span><span><b>Dodge the aunties</b> and their questions</span></li>
+      <li><span class="ic">🍩</span><span><b>Grab small chops</b> for power-ups</span></li>
+      <li><span class="ic">💃🏾</span><span><b>Dance-off!</b> When the MC calls you, tap the move on the beat</span></li>
+      <li><span class="ic">🏦</span><span><b>Everything you catch is banked.</b> Spend it in the Wardrobe shop</span></li>
+      <li><span class="ic">🔥</span><span><b>A new party every day.</b> Keep your streak for rewards</span></li>
+    </ul>
+    <button class="btn" id="howClose" style="margin-top:14px">Got it</button>
   </div></div>
 
   <div class="ov" id="wardrobe"><div class="inner wd">
@@ -1499,17 +1534,19 @@ document.querySelectorAll('#sexSeg button').forEach(b=>b.onclick=()=>{
 function streakCount(){const s=save.streak;return (s.last===todayKey()||s.last===yesterdayKey())?s.count:0;}
 const mav=$('#mcAv'), mavc=mav.getContext('2d');
 function drawMenuAv(){
-  const d=Math.min(2,window.devicePixelRatio||1); if(mav.width!==64*d){mav.width=64*d; mav.height=64*d;}
-  mavc.setTransform(d,0,0,d,0,0); mavc.clearRect(0,0,64,64);
-  drawMCAvatar(mavc,FORCED_MC,32,32+Math.sin(clock*3)*1.2,29);
+  const d=Math.min(2,window.devicePixelRatio||1); if(mav.width!==52*d){mav.width=52*d; mav.height=52*d;}
+  mavc.setTransform(d,0,0,d,0,0); mavc.clearRect(0,0,52,52);
+  drawMCAvatar(mavc,FORCED_MC,26,26+Math.sin(clock*3)*1,23);
 }
-if(FORCED_MC){ $('#mcAv').style.display='block'; $('#todayCard').classList.add('withav'); document.querySelector('#menu .kicker').textContent='Special edition · hosted by '+FORCED_MC.name; }
+if(FORCED_MC){ $('#mcAv').style.display='block'; $('#todayCard').classList.add('withav'); $('#homeKicker').textContent='Special edition · hosted by '+FORCED_MC.name; }
 const lav=$('#lookAv'), lavc=lav.getContext('2d');
 function drawLookAv(){
-  const d=Math.min(2,window.devicePixelRatio||1); if(lav.width!==56*d){lav.width=56*d; lav.height=64*d;}
-  lavc.setTransform(d,0,0,d,0,0); lavc.clearRect(0,0,56,64);
-  const w=24,h=w*96/58, bob=Math.abs(Math.sin(clock*BPS*Math.PI))*1.5;
-  lavc.save(); lavc.translate(28,38-bob); drawChar(lavc,look,w,h,false); lavc.restore();
+  const S=200, d=Math.min(2,window.devicePixelRatio||1); if(lav.width!==S*d){lav.width=S*d; lav.height=S*d;}
+  lavc.setTransform(d,0,0,d,0,0); lavc.clearRect(0,0,S,S);
+  const w=72,h=w*96/58, bt=clock*BPS, bob=Math.abs(Math.sin(bt*Math.PI))*4;
+  lavc.fillStyle='rgba(0,0,0,.35)'; lavc.beginPath(); lavc.ellipse(S/2,S*.56+h*.5,w*.62,7,0,0,7); lavc.fill();
+  lavc.save(); lavc.translate(S/2,S*.56-bob); lavc.rotate(Math.sin(bt*Math.PI)*.05);
+  drawChar(lavc,look,w,h,false,{l:[-.47,-.47+.06*Math.sin(bt*2*Math.PI)],r:[.47,-.47-.06*Math.sin(bt*2*Math.PI)]}); lavc.restore();
 }
 function refreshMenu(){
   $('#lookName').textContent=hasLook()?lookSummary(look):'Pick your outfit before your first party';
@@ -1517,15 +1554,15 @@ function refreshMenu(){
   if(state==='menu') setVenue(c.venue);
   $('#tNum').textContent=`Today's Owambe #${c.num}`;
   $('#tVen').textContent='📍 '+VENUES[c.venue].name+' · 🎵 '+STYLE_NAMES[venueStyle(c.venue)];
-  $('#tMC').textContent='🎤 Hosted by '+c.mc.name+(c.mc.handle?' ('+c.mc.handle+')':'')+' · '+c.mc.tag;
-  $('#tMod').textContent=c.mod.name+' · '+c.mod.desc;
+  $('#tMC').textContent='🎤 Hosted by '+c.mc.name+(c.mc.handle?' ('+c.mc.handle+')':'');
+  $('#tMod').textContent=c.mod.name; $('#tMod').title=c.mod.desc;
   const d=save.daily.key===c.key?save.daily:null;
-  $('#tBest').textContent=d&&d.plays?`Your best today: ${fmt(d.best)} · ${d.plays} play${d.plays>1?'s':''}`:"You haven't attended today's party yet";
+  $('#tBest').textContent=d&&d.plays?`Best today: ${fmt(d.best)}`:'Not played yet';
   const sc=streakCount();
-  $('#streakPill').textContent=sc?`🔥 ${sc}-day streak`+(save.streak.last===todayKey()?'':' · play today!'):'🔥 Start a streak today';
+  $('#streakPill').textContent=`🔥 ${sc} day${sc===1?'':'s'}`;
   $('#bankPill').textContent='🏦 '+fmt(save.bank);
   const L=levelOf(save.earned);
-  $('#lvlName').textContent=`🎖 Lv ${L.lv} · ${L.name}`;
+  $('#lvlName').innerHTML=`🎖 Lv ${L.lv} <small>${L.name}</small>`; $('#lvlName').parentElement.title=L.next?`${fmt(L.next[0]-save.earned)} more to ${L.next[1]}`:'Top level';
   if(L.next){const a=LEVELS[L.i][0],b=L.next[0]; $('#lvlFill').style.width=Math.round((save.earned-a)/(b-a)*100)+'%'; $('#lvlNext').textContent=`${fmt(b-save.earned)} more to ${L.next[1]}`;}
   else {$('#lvlFill').style.width='100%'; $('#lvlNext').textContent='Top level reached. Respect! 👑';}
 }
@@ -1617,6 +1654,8 @@ function setMute(m){ muted=m; store.set('owambe_muted',m); $('#muteBtn').textCon
 $('#dailyBtn').onclick=()=>play('daily');
 $('#freeBtn').onclick=()=>play('free');
 $('#lookBtn').onclick=()=>openWardrobe('edit','menu');
+$('#lookStage').onclick=()=>openWardrobe('edit','menu');
+$('#howBtn').onclick=()=>show('howto',true); $('#howClose').onclick=()=>show('howto',false);
 $('#goBtn').onclick=()=>{
   if(wMode==='start'){ startGame(); return; }
   if(!buyPending()) return;
@@ -1736,7 +1775,7 @@ async function loadChallenge(){
   const mc=MCS.find(m=>m.id===data.mc)||MCS[0];
   $('#chTxt').textContent=`🔥 ${data.nickname} went home with ${fmt(data.haul)}. Can you beat am?`;
   $('#chMeta').textContent=`Same party, same money: 📍 ${VENUES[data.venue]?VENUES[data.venue].name:''} · 🎤 ${mc.name}`;
-  $('#chCard').style.display='block';
+  $('#chCard').style.display='block'; document.querySelector('#menu .inner').classList.add('haschal');
 }
 function askNick(){
   return new Promise(res=>{
