@@ -82,6 +82,13 @@ details.howto summary::-webkit-details-marker{display:none}
 .bbar.show{display:flex}
 .bbar button{appearance:none;position:relative;width:50px;height:50px;border-radius:50%;border:2px solid var(--c);background:rgba(20,8,30,.78);font-size:22px;cursor:pointer;touch-action:manipulation;box-shadow:0 0 14px var(--c)}
 .bbar button b{position:absolute;right:-4px;top:-4px;min-width:20px;height:20px;border-radius:10px;background:var(--c);color:#1a0a00;font:800 11px/20px Outfit,sans-serif;padding:0 5px}
+.wrow{width:100%;text-align:left}
+.mylook{display:flex;align-items:center;gap:12px;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:6px 10px 6px 6px;margin:-2px 0 14px;text-align:left}
+.mylook canvas{width:56px;height:64px;flex:none}
+.mylook .lk{flex:1;min-width:0}
+.mylook .lkt{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#ff9f1c}
+.mylook .lkn{font-size:13px;color:#f3e9ff;font-weight:600;margin-top:2px;line-height:1.25}
+.mylook .btn.ghost{padding:10px 12px;font-size:13px;flex:none}
 .lblsub{align-self:flex-start;font-size:11.5px;color:#a995c4;margin:-3px 0 6px;text-align:left}
 .dbar{position:absolute;left:10px;right:10px;bottom:14px;display:none;grid-template-columns:repeat(4,1fr);gap:8px;z-index:4}
 .dbar.show{display:grid;animation:fade .3s ease}
@@ -167,6 +174,7 @@ body:not(.online) .online-only{display:none!important}
     </div>
     <div class="pills"><span class="pill" id="streakPill">🔥 0-day streak</span><span class="pill" id="bankPill">🏦 ₦0</span></div>
     <div class="lvl" id="lvlBox"><div class="lvlname" id="lvlName"></div><div class="lvlbar"><i id="lvlFill"></i></div><div class="lvlnext" id="lvlNext"></div></div>
+    <div class="mylook"><canvas id="lookAv"></canvas><div class="lk"><div class="lkt">Your look</div><div class="lkn" id="lookName"></div></div><button class="btn ghost" id="lookBtn">👗 Wardrobe</button></div>
     <button class="btn" id="dailyBtn">Enter today's party</button>
     <button class="btn ghost wide" id="freeBtn">Free party (practice)</button>
     <button class="btn ghost wide online-only" id="lbBtn">🏆 Leaderboard</button>
@@ -187,19 +195,21 @@ body:not(.online) .online-only{display:none!important}
 
   <div class="ov" id="wardrobe"><div class="inner wd">
     <div class="kicker">Aso-ebi check</div>
-    <h2 class="sm">DRESS TO IMPRESS</h2>
+    <h2 class="sm">WARDROBE</h2>
     <div class="bankbar">🏦 Bank: <b id="wBank">₦0</b></div>
     <canvas id="pv"></canvas>
-    <div class="seg" id="sexSeg"><button data-v="m">Man</button><button data-v="f">Woman</button></div>
-    <div class="lbl">Outfit</div><div class="chips" id="outfitChips"></div>
-    <div class="lbl" id="sleeveLbl">Sleeves</div><div class="chips" id="sleeveChips"></div>
-    <div class="lbl">Headwear</div><div class="chips" id="hatChips"></div>
-    <div class="lbl">Footwear</div><div class="chips" id="shoeChips"></div>
-    <div class="lbl">Fabric</div><div class="sw" id="fabricSw"></div>
-    <div class="lbl" id="headLbl">Cap colour</div><div class="sw" id="headSw"></div>
-    <div class="lbl">Accessories</div><div class="chips" id="accChips"></div>
-    <div class="lbl">Skin tone</div><div class="sw" id="skinSw"></div>
-    <div class="lbl">Party boosts</div><div class="lblsub">Buy now, tap them during the party when you need them</div><div class="chips" id="boostChips"></div>
+    <div class="seg" id="wTabs"><button data-t="closet">👗 My closet</button><button data-t="shop">🛍️ Shop</button></div>
+    <div class="seg" id="sexSeg" style="margin-top:4px"><button data-v="m">Man</button><button data-v="f">Woman</button></div>
+    <div class="wrow" id="row_outfit"><div class="lbl">Outfit</div><div class="chips" id="outfitChips"></div></div>
+    <div class="wrow" id="row_sleeve"><div class="lbl">Sleeves</div><div class="chips" id="sleeveChips"></div></div>
+    <div class="wrow" id="row_hat"><div class="lbl">Headwear</div><div class="chips" id="hatChips"></div></div>
+    <div class="wrow" id="row_shoe"><div class="lbl">Footwear</div><div class="chips" id="shoeChips"></div></div>
+    <div class="wrow" id="row_fab"><div class="lbl" id="fabLbl">Fabric</div><div class="sw" id="fabricSw"></div></div>
+    <div class="wrow" id="row_head"><div class="lbl" id="headLbl">Cap colour</div><div class="sw" id="headSw"></div></div>
+    <div class="wrow" id="row_acc"><div class="lbl">Accessories</div><div class="chips" id="accChips"></div></div>
+    <div class="wrow" id="row_skin"><div class="lbl">Skin tone</div><div class="sw" id="skinSw"></div></div>
+    <div class="wrow" id="row_boost"><div class="lbl">Party boosts</div><div class="lblsub" id="boostSub"></div><div class="chips" id="boostChips"></div></div>
+    <div class="hint" id="shopEmpty"></div>
     <button class="btn" id="goBtn">Let's dance!</button>
     <div class="hint" id="wHint"></div>
     <button class="btn ghost wide" id="wBack">Back</button>
@@ -1413,33 +1423,74 @@ function swatchBg(f){
   if(f.pat==='lace') return `radial-gradient(circle at 30% 30%,#fff5c4 0 2px,transparent 3px) 0 0/8px 8px,${f.c}`;
   return f.c;
 }
+let wMode='edit', wFrom='menu', wTab='closet', savedLook=JSON.parse(JSON.stringify(look));
+const DEFKEY={fabric:'gold',head:'purple',acc:'none'};
+function revertUnowned(){
+  const map={outfit:'outfit',hat:'hat',shoe:'shoe',acc:'acc',fabric:'fab',head:'fab'};
+  for(const[key,t] of Object.entries(map)){
+    if(unlocked(t+':'+look[key])) continue;
+    if(savedLook.sex===look.sex&&unlocked(t+':'+savedLook[key])) look[key]=savedLook[key];
+    else look[key]=DEFKEY[key]||(key==='outfit'?OUTFITS:key==='hat'?HATS:SHOES)[look.sex][0][0];
+  }
+}
+function lookSummary(L){
+  const nm=(list,id)=>{const it=list.find(a=>a[0]===id);return it?it[1]:'';};
+  const short=L.sleeve==='short'&&!(L.sex==='m'&&L.outfit==='agbada');
+  return [nm(OUTFITS[L.sex],L.outfit)+(short?' (short sleeve)':''),fabById(L.fabric).n,nm(HATS[L.sex],L.hat),nm(SHOES[L.sex],L.shoe)].filter(Boolean).join(' · ');
+}
 function buildWardrobe(){
+  const shop=wTab==='shop';
+  document.querySelectorAll('#wTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===wTab));
   document.querySelectorAll('#sexSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===look.sex));
-  const chips=(el,list,key,type)=>{el.innerHTML='';for(const[v,n,sub,price]of list){const k=type+':'+v, lk=!unlocked(k);
-    const b=document.createElement('button');b.className='chip'+(look[key]===v?' on':'')+(lk?' lk':'');
-    b.innerHTML=`${n}<small>${lk?'🔒 '+fmtK(price):sub}</small>`;b.onclick=()=>{look[key]=v;buildWardrobe();};el.appendChild(b);}};
-  chips($('#outfitChips'),OUTFITS[look.sex],'outfit','outfit'); chips($('#hatChips'),HATS[look.sex],'hat','hat'); chips($('#accChips'),ACCS,'acc','acc');
-  chips($('#shoeChips'),SHOES[look.sex],'shoe','shoe');
+  const showRow=(id,on)=>{$('#'+id).style.display=on?'':'none';};
+  let shopCount=0;
+  const chips=(el,list,key,type)=>{el.innerHTML=''; let n=0;
+    for(const[v,nm,sub,price]of list){const k=type+':'+v, lk=!unlocked(k); if(shop!==lk) continue; n++;
+      const b=document.createElement('button');b.className='chip'+(look[key]===v?' on':'')+(lk?' lk':'');
+      b.innerHTML=`${nm}<small>${lk?'🔒 '+fmtK(price):sub}</small>`;b.onclick=()=>{look[key]=v;buildWardrobe();};el.appendChild(b);}
+    if(shop) shopCount+=n; return n;};
+  showRow('row_outfit',chips($('#outfitChips'),OUTFITS[look.sex],'outfit','outfit')>0);
+  showRow('row_hat',chips($('#hatChips'),HATS[look.sex],'hat','hat')>0);
+  showRow('row_shoe',chips($('#shoeChips'),SHOES[look.sex],'shoe','shoe')>0);
+  showRow('row_acc',chips($('#accChips'),ACCS,'acc','acc')>0);
   const ag=look.sex==='m'&&look.outfit==='agbada';
-  $('#sleeveLbl').style.display=ag?'none':''; $('#sleeveChips').style.display=ag?'none':'';
-  chips($('#sleeveChips'),SLEEVES,'sleeve','sleeve');
-  const bc=$('#boostChips'); bc.innerHTML='';
-  for(const[k,B] of Object.entries(BOOSTS)){const b=document.createElement('button'); b.className='chip'; const n=save.boosts[k]||0;
-    b.innerHTML=`${B.e} ${B.n}<small>${B.d} · ${fmtK(B.p)}${n?` · <b style="color:#7ee081">you have ${n}</b>`:''}</small>`;
-    b.onclick=()=>{ if(save.bank<B.p){$('#wHint').textContent=`You need ${fmt(B.p-save.bank)} more for ${B.n}`; return;} save.bank-=B.p; save.boosts[k]=n+1; persist(); sfx.buy(); buildWardrobe(); $('#wHint').textContent=`✓ ${B.n} added. Tap it during the party.`;};
-    bc.appendChild(b);}
-  const sw=(el,key)=>{el.innerHTML='';for(const f of FABRICS){const lk=!unlocked('fab:'+f.id);const b=document.createElement('button');b.style.background=swatchBg(f);
-    b.title=f.n+(lk?' · '+fmtK(f.p):'');b.setAttribute('aria-label',b.title);b.className=(look[key]===f.id?'on':'')+(lk?' lk':'');b.onclick=()=>{look[key]=f.id;buildWardrobe();};el.appendChild(b);}};
-  sw($('#fabricSw'),'fabric'); sw($('#headSw'),'head');
+  showRow('row_sleeve',!shop&&!ag&&chips($('#sleeveChips'),SLEEVES,'sleeve','sleeve')>0);
+  const sw=(el,key)=>{el.innerHTML=''; let n=0;
+    for(const f of FABRICS){const lk=!unlocked('fab:'+f.id); if(shop!==lk) continue; n++;
+      const b=document.createElement('button');b.style.background=swatchBg(f);
+      b.title=f.n+(lk?' · '+fmtK(f.p):'');b.setAttribute('aria-label',b.title);b.className=(look[key]===f.id?'on':'')+(lk?' lk':'');b.onclick=()=>{look[key]=f.id;buildWardrobe(); if(lk) $('#wHint').textContent=`${f.n}: ${fmt(f.p)}. Unlocks for clothes and ${look.sex==='m'?'caps':'geles'}.`;};el.appendChild(b);}
+    if(shop&&key==='fabric') shopCount+=n; return n;};
+  showRow('row_fab',sw($('#fabricSw'),'fabric')>0);
+  showRow('row_head',!shop&&sw($('#headSw'),'head')>0);
+  $('#fabLbl').textContent=shop?'Fabrics (for clothes & headwear)':'Fabric';
   const ss=$('#skinSw'); ss.innerHTML=''; for(const c of SKINS){const b=document.createElement('button');b.style.background=c;b.setAttribute('aria-label','Skin tone');b.className=look.skin===c?'on':'';b.onclick=()=>{look.skin=c;buildWardrobe();};ss.appendChild(b);}
+  showRow('row_skin',!shop);
   $('#headLbl').textContent=look.sex==='m'?'Cap colour':(look.outfit==='iro'?'Gele & ipele':look.outfit==='gown'?'Gele & print':'Gele colour');
+  // boosts: buy in the shop, see what you have in the closet
+  const bc=$('#boostChips'); bc.innerHTML='';
+  const have=Object.entries(BOOSTS).filter(([k])=>save.boosts[k]>0).map(([k,B])=>`${B.e} ${save.boosts[k]}`).join('  ·  ');
+  if(shop){
+    $('#boostSub').textContent='Buy now, tap them during the party when you need them';
+    for(const[k,B] of Object.entries(BOOSTS)){const b=document.createElement('button'); b.className='chip'; const n=save.boosts[k]||0;
+      b.innerHTML=`${B.e} ${B.n}<small>${B.d} · ${fmtK(B.p)}${n?` · <b style="color:#7ee081">you have ${n}</b>`:''}</small>`;
+      b.onclick=()=>{ if(save.bank<B.p){$('#wHint').textContent=`You need ${fmt(B.p-save.bank)} more for ${B.n}`; return;} save.bank-=B.p; save.boosts[k]=n+1; persist(); sfx.buy(); buildWardrobe(); $('#wHint').textContent=`✓ ${B.n} added. Tap it during the party.`;};
+      bc.appendChild(b);}
+    showRow('row_boost',true);
+  } else { $('#boostSub').textContent='You have: '+have; showRow('row_boost',!!have); }
+  $('#shopEmpty').textContent=shop&&!shopCount?`You own every ${look.sex==='m'?"men's":"women's"} item. Odogwu! 👑`:'';
   $('#wBank').textContent=fmt(save.bank);
   const p=pendingItems(), go=$('#goBtn'), hint=$('#wHint');
   const names=p.items.map(k=>{const[t,id]=k.split(':');if(t==='fab')return fabById(id).n;const l=t==='acc'?ACCS:(t==='outfit'?OUTFITS:t==='shoe'?SHOES:HATS)[look.sex];const it=l.find(a=>a[0]===id);return it?it[1]:id;});
-  if(!p.items.length){go.disabled=false; go.textContent="Let's dance!"; hint.textContent=mode==='daily'?"Today's party: "+VENUES[dailyCfg().venue].name:mode==='challenge'&&challenge?`Challenge: beat ${challenge.nickname}'s ${fmt(challenge.haul)}`:'Free party · practice mode';}
-  else if(save.bank>=p.total){go.disabled=false; go.textContent='Unlock for '+fmt(p.total); hint.textContent='Unlocks: '+names.join(', ');}
+  const start=wMode==='start';
+  $('#wBack').textContent=start?'Back':'Cancel';
+  if(!p.items.length){
+    go.disabled=false; go.textContent=start?"Let's dance!":'Save my look';
+    if(!hint.textContent.startsWith('✓')) hint.textContent=start?(mode==='daily'?"Today's party: "+VENUES[dailyCfg().venue].name:mode==='challenge'&&challenge?`Challenge: beat ${challenge.nickname}'s ${fmt(challenge.haul)}`:'Free party · practice mode'):(shop?'Tap anything to try it on':'Your look is used for every party until you change it');
+  }
+  else if(save.bank>=p.total){go.disabled=false; go.textContent='Unlock for '+fmt(p.total)+(start?' & dance':''); hint.textContent='Unlocks: '+names.join(', ');}
   else {go.disabled=true; go.textContent='Need '+fmt(p.total-save.bank)+' more'; hint.textContent='Catch more naira to unlock '+names.join(', ');}
 }
+document.querySelectorAll('#wTabs button').forEach(b=>b.onclick=()=>{ if(wTab===b.dataset.t) return; wTab=b.dataset.t; if(wTab==='closet') revertUnowned(); $('#wHint').textContent=''; buildWardrobe(); $('#wardrobe').scrollTop=0; });
 document.querySelectorAll('#sexSeg button').forEach(b=>b.onclick=()=>{
   if(look.sex===b.dataset.v) return; look.sex=b.dataset.v; look.outfit=OUTFITS[look.sex][0][0]; look.hat=HATS[look.sex][0][0]; look.shoe=SHOES[look.sex][0][0]; buildWardrobe();
 });
@@ -1453,7 +1504,15 @@ function drawMenuAv(){
   drawMCAvatar(mavc,FORCED_MC,32,32+Math.sin(clock*3)*1.2,29);
 }
 if(FORCED_MC){ $('#mcAv').style.display='block'; $('#todayCard').classList.add('withav'); document.querySelector('#menu .kicker').textContent='Special edition · hosted by '+FORCED_MC.name; }
+const lav=$('#lookAv'), lavc=lav.getContext('2d');
+function drawLookAv(){
+  const d=Math.min(2,window.devicePixelRatio||1); if(lav.width!==56*d){lav.width=56*d; lav.height=64*d;}
+  lavc.setTransform(d,0,0,d,0,0); lavc.clearRect(0,0,56,64);
+  const w=24,h=w*96/58, bob=Math.abs(Math.sin(clock*BPS*Math.PI))*1.5;
+  lavc.save(); lavc.translate(28,38-bob); drawChar(lavc,look,w,h,false); lavc.restore();
+}
 function refreshMenu(){
+  $('#lookName').textContent=hasLook()?lookSummary(look):'Pick your outfit before your first party';
   const c=dailyCfg();
   if(state==='menu') setVenue(c.venue);
   $('#tNum').textContent=`Today's Owambe #${c.num}`;
@@ -1480,24 +1539,27 @@ function frame(t){
     if(g.slow>0){g.slow-=dt; s*=.35;}
     if(g.ending!=null){g.ending-=dt; s*=.3; if(g.ending<=0) endGame();}
     clock+=s; g.real+=dt; update(s);
-  } else if(state==='menu'||state==='wardrobe'){clock+=dt; updateDeco(dt); if(state==='wardrobe') drawPreview(); else if(FORCED_MC) drawMenuAv();}
+  } else if(state==='menu'||state==='wardrobe'){clock+=dt; updateDeco(dt); if(state==='wardrobe') drawPreview(); else { drawLookAv(); if(FORCED_MC) drawMenuAv(); }}
   else if(state==='over'){clock+=dt*.5;}
   syncBoostBar();
   render(dt);
   requestAnimationFrame(frame);
 }
 function show(id,on){$('#'+id).classList.toggle('show',on);}
-function openWardrobe(){
+function hasLook(){ return store.get('owambe_look',null)!=null; }
+function play(m){ mode=m; if(!hasLook()||pendingItems().items.length){ openWardrobe('start'); return; } startGame(); }
+function buyPending(){ const p=pendingItems(); if(!p.items.length) return true; if(save.bank<p.total) return false; save.bank-=p.total; save.owned.push(...p.items); persist(); sfx.buy(); return true; }
+function saveLook(){ store.set('owambe_look',look); savedLook=JSON.parse(JSON.stringify(look)); persist(); }
+function closeWardrobe(){ show('wardrobe',false); if(wFrom==='over'&&g){ state='over'; show('over',true); } else goHome(); }
+function openWardrobe(kind,from){
+  wMode=kind||'edit'; wFrom=from||(state==='over'?'over':'menu'); wTab='closet';
+  savedLook=JSON.parse(JSON.stringify(look)); $('#wHint').textContent='';
   initAudio(); state='wardrobe'; buildWardrobe();
   show('menu',false); show('over',false); show('pause',false); show('wardrobe',true); $('#wardrobe').scrollTop=0;
 }
 function startGame(){
-  const p=pendingItems();
-  if(p.items.length){
-    if(save.bank<p.total) return;
-    save.bank-=p.total; save.owned.push(...p.items); persist(); sfx.buy();
-  }
-  store.set('owambe_look',look); persist(); show('wardrobe',false);
+  if(!buyPending()) return;
+  saveLook(); show('wardrobe',false);
   initAudio(); newGame(); renderBoostBar(); state='play'; nextT=0; step=0; bar=0; startTrack();
   show('menu',false); show('over',false); show('pause',false); $('#hudbtns').classList.add('show');
   $('#bragTxt').style.display='none'; $('#bragBtn').textContent=mode==='daily'?'Share result':'Copy my brag';
@@ -1552,10 +1614,16 @@ function resumeGame(){ if(state!=='pause') return; initAudio(); state='play'; sh
 function goHome(){ state='menu'; g=null; stopTrack(); $('#danceBar').classList.remove('show'); ['pause','over','wardrobe'].forEach(i=>show(i,false)); $('#hudbtns').classList.remove('show'); refreshMenu(); show('menu',true); }
 function setMute(m){ muted=m; store.set('owambe_muted',m); $('#muteBtn').textContent=m?'🔇':'🔊'; if(master) master.gain.value=m?0:.7; if(trackEl) trackEl.muted=m; }
 
-$('#dailyBtn').onclick=()=>{mode='daily'; openWardrobe();};
-$('#freeBtn').onclick=()=>{mode='free'; openWardrobe();};
-$('#goBtn').onclick=startGame; $('#againBtn').onclick=startGame; $('#outfitBtn').onclick=openWardrobe;
-$('#wBack').onclick=goHome;
+$('#dailyBtn').onclick=()=>play('daily');
+$('#freeBtn').onclick=()=>play('free');
+$('#lookBtn').onclick=()=>openWardrobe('edit','menu');
+$('#goBtn').onclick=()=>{
+  if(wMode==='start'){ startGame(); return; }
+  if(!buyPending()) return;
+  const bought=wTab==='shop'; saveLook();
+  if(bought){ buildWardrobe(); $('#wHint').textContent='✓ Unlocked and saved to your closet'; } else closeWardrobe();
+}; $('#againBtn').onclick=startGame; $('#outfitBtn').onclick=()=>openWardrobe('edit','over');
+$('#wBack').onclick=()=>{ look=JSON.parse(JSON.stringify(savedLook)); if(wMode==='start') goHome(); else closeWardrobe(); };
 $('#pauseBtn').onclick=pauseGame; $('#resumeBtn').onclick=resumeGame;
 $('#quitBtn').onclick=goHome; $('#homeBtn').onclick=goHome;
 $('#muteBtn').onclick=()=>{initAudio(); setMute(!muted);};
@@ -1722,7 +1790,7 @@ $('#codeIn').addEventListener('keydown',e=>{e.stopPropagation(); if(e.key==='Ent
 $('#lbBtn').onclick=openLB; $('#lbBtn2').onclick=openLB; $('#lbClose').onclick=()=>show('lb',false);
 document.querySelectorAll('#lbSeg button').forEach(b=>b.onclick=()=>{lbScope=b.dataset.s; loadLB();});
 $('#chalBtn').onclick=makeChallenge;
-$('#chBtn').onclick=()=>{mode='challenge'; openWardrobe();};
+$('#chBtn').onclick=()=>play('challenge');
 $('#nickIn').addEventListener('keydown',e=>{e.stopPropagation(); if(e.key==='Enter') $('#nickOk').click();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){pauseGame(); if(sb) pushNow();} else if(state==='menu'){refreshMenu(); if(sb) pullSave();}});
 window.addEventListener('keydown',e=>{
@@ -1730,7 +1798,7 @@ window.addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.l=true;
   if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') keys.r=true;
   if(e.key==='Escape'||e.key==='p'||e.key==='P'){state==='play'?pauseGame():resumeGame();}
-  if(e.key==='Enter'&&(state==='menu'||state==='over'||state==='wardrobe')){e.preventDefault(); if(state==='menu'){mode='daily';openWardrobe();} else startGame();}
+  if(e.key==='Enter'&&(state==='menu'||state==='over'||state==='wardrobe')){e.preventDefault(); if(state==='menu') play('daily'); else if(state==='wardrobe') $('#goBtn').click(); else startGame();}
 });
 window.addEventListener('keyup',e=>{
   if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.l=false;
