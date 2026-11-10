@@ -111,6 +111,44 @@ h1.logo{font-size:clamp(28px,9.5vw,40px);line-height:1}
 .dock button{appearance:none;flex:1;max-width:80px;background:none;border:0;color:#e8d5ff;font:700 11px Outfit,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 0}
 .dock button span{width:46px;height:46px;border-radius:14px;background:rgba(10,4,18,.65);border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:21px}
 #howto{background:radial-gradient(120% 70% at 50% 30%,#230c37,#06020c);z-index:7}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;margin:14px 0 4px}
+.tile{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:10px 4px 9px;display:flex;flex-direction:column;align-items:center}
+.tile i{font-style:normal;font-size:20px}
+.tile b{font-size:17px;color:#fff;margin-top:2px}
+.tile span{font-size:10.5px;color:#bba6d6}
+.souv{margin-top:10px;display:flex;flex-direction:column;align-items:center}
+.souvlbl{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#ff9f1c}
+.bag{appearance:none;border:2px solid #ffc23d;background:radial-gradient(circle,rgba(255,194,61,.35),rgba(123,44,191,.35));width:84px;height:84px;border-radius:20px;font-size:44px;margin-top:6px;cursor:pointer;box-shadow:0 0 28px rgba(255,194,61,.45);animation:wob 1.2s ease-in-out infinite}
+.bag.open{animation:pop .45s ease-out forwards;cursor:default}
+.bag.empty{animation:none;opacity:.45;filter:grayscale(.8);cursor:default;box-shadow:none}
+@keyframes wob{0%,100%{transform:rotate(0)}20%{transform:rotate(-9deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(3deg)}}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+.souvtxt{margin-top:7px;font-weight:800;font-size:14px;color:#ffe9b0}
+.souvtxt.rare{color:#7ee081;font-size:16px}
+.mini{margin-top:10px;font-size:12px;color:#a995c4}
+.taskstrip{appearance:none;width:100%;display:flex;align-items:center;gap:8px;text-align:left;background:linear-gradient(90deg,rgba(126,224,129,.2),rgba(126,224,129,.06));border:1px solid rgba(126,224,129,.45);border-radius:14px;padding:9px 12px;margin:0 0 12px;color:#fff;cursor:pointer;font:700 13px Outfit,sans-serif}
+.taskstrip .ti{font-size:18px}
+.taskstrip .tt{flex:1;line-height:1.2}
+.taskstrip .tp{font-weight:800;color:#7ee081;white-space:nowrap}
+.tasklist,.lad{width:100%;display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.task{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:10px 12px;text-align:left}
+.task.done{border-color:rgba(126,224,129,.6);background:rgba(126,224,129,.12)}
+.task .tx{flex:1;font-size:14px;font-weight:700}
+.task .tx small{display:block;font-weight:400;color:#bba6d6;margin-top:2px}
+.task .tr{font-weight:800;color:#ffc23d;white-space:nowrap}
+.task .bar{height:5px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden}
+.task .bar i{display:block;height:100%;background:#7ee081}
+.stg{display:flex;align-items:center;gap:12px;text-align:left;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.stg .nd{width:38px;height:38px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2)}
+.stg.cur{background:rgba(255,194,61,.15);border-color:rgba(255,194,61,.6)}
+.stg.cur .nd{background:#ffc23d;color:#2a0f00;border-color:#ffc23d}
+.stg.done .nd{background:rgba(126,224,129,.25);border-color:#7ee081}
+.stg.lock{opacity:.55}
+.stg .sx{flex:1;font-size:13px;color:#e8d5ff}
+.stg .sx b{display:block;font-size:15px;color:#fff}
+.stg .sr{font-size:12px;font-weight:800;color:#ffc23d;text-align:right}
+#ladder,#tasksOv{background:radial-gradient(120% 70% at 50% 30%,#230c37,#06020c);z-index:7}
+.dock button em{font-style:normal}
 .lblsub{align-self:flex-start;font-size:11.5px;color:#a995c4;margin:-3px 0 6px;text-align:left}
 .dbar{position:absolute;left:10px;right:10px;bottom:14px;display:none;grid-template-columns:repeat(4,1fr);gap:8px;z-index:4}
 .dbar.show{display:grid;animation:fade .3s ease}
@@ -201,9 +239,10 @@ body:not(.online) .online-only{display:none!important}
       <div class="pmeta" id="tMC"></div>
       <div class="prow"><span class="mod" id="tMod"></span><span class="pbest" id="tBest"></span></div>
     </div>
+    <button class="taskstrip" id="taskStrip"><span class="ti">🎯</span><span class="tt" id="taskTxt"></span><span class="tp" id="taskProg"></span></button>
     <button class="btn big" id="dailyBtn">▶ PLAY TODAY'S PARTY</button>
     <div class="dock">
-      <button id="freeBtn"><span>🎉</span>Practice</button>
+      <button id="freeBtn"><span>🪜</span><em id="ladLbl">Ladder</em></button>
       <button id="lookBtn"><span>👗</span>Wardrobe</button>
       <button id="lbBtn" class="online-only"><span>🏆</span>Ranks</button>
       <button id="syncBtn" class="online-only"><span>📱</span>Devices</button>
@@ -264,27 +303,50 @@ body:not(.online) .online-only{display:none!important}
     <div class="haul" id="haul">₦0</div>
     <div class="rank" id="rank">Gate Crasher</div>
     <div class="newbest" id="newBest">🎉 New best!</div>
-    <div class="stats">
-      <div class="stat"><b id="stNotes">0</b><span>notes caught</span></div>
-      <div class="stat"><b id="stCombo">0</b><span>best combo</span></div>
-      <div class="stat"><b id="stAunty">0</b><span>aunties escaped</span></div>
-    </div>
     <div class="chres" id="chRes"></div>
-    <div class="earn" id="earn"></div>
-    <div class="lbline online-only" id="lbLine"></div>
-    <div class="streakline" id="streakLine"></div>
+    <div class="tiles">
+      <div class="tile"><i>🏦</i><b id="tBank">+₦0</b><span id="tBankSub">banked</span></div>
+      <div class="tile"><i>🎖</i><b id="tLvl">Lv 1</b><span id="tLvlSub"></span></div>
+      <div class="tile"><i>🔥</i><b id="tStreak">0</b><span id="tStreakSub">day streak</span></div>
+    </div>
+    <div class="souv" id="souv">
+      <div class="souvlbl">Bonus reward</div>
+      <button class="bag" id="souvBtn" aria-label="Open souvenir bag">🎁</button>
+      <div class="souvtxt" id="souvTxt">Tap your souvenir bag!</div>
+    </div>
     <div class="rewards" id="rewards"></div>
+    <div class="mini" id="miniStats"></div>
+    <div class="lbline online-only" id="lbLine"></div>
     <div class="mcquote" id="mcQuote"></div>
-    <div class="row"><button class="btn" id="againBtn">Dance again</button></div>
-    <div class="row">
-      <button class="btn ghost online-only" id="chalBtn">⚔️ Challenge a friend</button>
-      <button class="btn ghost online-only" id="lbBtn2">🏆 Leaderboard</button>
-      <button class="btn ghost" id="bragBtn">Share result</button>
-      <button class="btn ghost" id="outfitBtn">Wardrobe</button>
-      <button class="btn ghost" id="homeBtn">Home</button>
+    <button class="btn" id="againBtn" style="margin-top:14px">Dance again</button>
+    <div class="dock">
+      <button id="chalBtn" class="online-only"><span>⚔️</span><em>Challenge</em></button>
+      <button id="bragBtn"><span>📣</span><em>Share</em></button>
+      <button id="outfitBtn"><span>👗</span><em>Wardrobe</em></button>
+      <button id="lbBtn2" class="online-only"><span>🏆</span><em>Ranks</em></button>
+      <button id="homeBtn"><span>🏠</span><em>Home</em></button>
     </div>
     <div class="brag" id="bragTxt"></div>
   </div></div>
+
+  <div class="ov" id="ladder"><div class="inner">
+    <div class="kicker">Party ladder</div>
+    <h2 class="sm">CLIMB THE OWAMBE</h2>
+    <div class="msg">Hit the naira target to clear each stage. Every stage is harder than the last.</div>
+    <div class="lad" id="ladList"></div>
+    <button class="btn big" id="ladPlay">▶ Play Stage 1</button>
+    <button class="btn ghost wide" id="ladFree">🎉 Free practice (random party)</button>
+    <button class="btn ghost wide" id="ladClose">Back</button>
+  </div></div>
+
+  <div class="ov" id="tasksOv"><div class="inner">
+    <div class="kicker">Today's tasks</div>
+    <h2 class="sm">BIG MAN'S ERRANDS</h2>
+    <div class="msg">New tasks every day. Rewards go straight to your bank.</div>
+    <div class="tasklist" id="taskList"></div>
+    <button class="btn" id="tasksClose" style="margin-top:14px">Got it</button>
+  </div></div>
+
   <div class="ov" id="lb"><div class="inner">
     <div class="kicker">Hall of Odogwu</div>
     <h2 class="sm">LEADERBOARD</h2>
@@ -444,6 +506,10 @@ function dailyCfg(){
   if(new Date().getDay()===6) mod=SATURDAY;
   else {const tot=MODS.reduce((a,m)=>a+m.w,0);let x=r()*tot;mod=MODS[0];for(const m of MODS){x-=m.w;if(x<0){mod=m;break}}}
   return {mode:'daily',key,num:dayNum(key),seed,venue,mc,mod};
+}
+function ladderCfg(){
+  const S=stageInfo(save.stage||1), seed=hashStr('ladder-'+S.n);
+  return {mode:'ladder',stage:S.n,seed,venue:S.venue,mc:FORCED_MC||ROT[seed%ROT.length],mod:S.boss?MODS.find(m=>m.id==='aunties'):MODS[0],target:S.target,reward:S.reward,diffAdd:S.diffAdd,boss:S.boss};
 }
 function freeCfg(){return {mode:'free',venue:pick(VENUE_IDS),mc:FORCED_MC||pick(ROT),mod:MODS[0],seed:(Math.random()*2147483647)|0};}
 let challenge=null;
@@ -667,6 +733,42 @@ const SHOES={
 };
 const BOOSTS={magnet:{e:'🧲',n:'Money magnet',d:'8s pull',p:8000,c:'#4ecdc4'},shield:{e:'🛡️',n:'Aso-ebi shield',d:'8s safe',p:10000,c:'#ffd93d'},life:{e:'🍩',n:'Extra life',d:'+1 ❤',p:15000,c:'#ff9f43'},rain:{e:'💸',n:'Money rain',d:'5s spray',p:20000,c:'#7ee081'}};
 if(!save.boosts) save.boosts={magnet:0,shield:0,life:0,rain:0};
+if(!save.stage) save.stage=1;
+// ---- daily tasks ----
+const TASKS=[
+  {id:'c1000',t:n=>`Catch ${n} ₦1000 notes in one party`,a:[5,8],kind:'best',get:(G,h)=>G.c1000},
+  {id:'escape',t:n=>`Escape ${n} aunties in one party`,a:[3,5],kind:'best',get:(G,h)=>G.escaped},
+  {id:'combo',t:n=>`Reach a ${n} combo`,a:[15,25],kind:'best',get:(G,h)=>G.bestCombo},
+  {id:'haul',t:n=>`Go home with ${fmtK(n)} in one party`,a:[20000,45000],kind:'best',get:(G,h)=>h},
+  {id:'dance',t:n=>`Win ${n} dance-off${n>1?'s':''}`,a:[1,2],kind:'sum',get:(G,h)=>G.danceWins},
+  {id:'plays',t:n=>`Play ${n} parties`,a:[2,4],kind:'sum',get:(G,h)=>1},
+  {id:'pows',t:n=>`Grab ${n} small chops power-ups`,a:[2,4],kind:'sum',get:(G,h)=>G.pows},
+  {id:'perfect',t:n=>`Get ${n} PERFECT dance moves`,a:[6,10],kind:'sum',get:(G,h)=>G.perfects},
+  {id:'notes',t:n=>`Catch ${n} notes in total`,a:[60,120],kind:'sum',get:(G,h)=>G.caught},
+  {id:'choice',t:n=>`Pick ${n} quick-choice tables`,a:[2,3],kind:'sum',get:(G,h)=>G.choices}
+];
+const TASK_REWARDS=[3000,5000,10000];
+function todayTasks(){
+  const key=todayKey();
+  if(!save.tasks||save.tasks.key!==key){
+    const r=mulberry32(hashStr('tasks-'+key)), pool=TASKS.slice(), list=[];
+    for(let i=0;i<3;i++){const T=pool.splice(Math.floor(r()*pool.length),1)[0]; list.push({id:T.id,n:T.a[i<2?0:1],prog:0,done:false,reward:TASK_REWARDS[i]});}
+    save.tasks={key,list};
+  }
+  return save.tasks;
+}
+const taskText=t=>TASKS.find(x=>x.id===t.id).t(t.n);
+const progText=t=>t.id==='haul'?`${fmtK(Math.min(t.prog,t.n))}/${fmtK(t.n)}`:`${Math.min(t.prog,t.n)}/${t.n}`;
+// ---- party ladder ----
+function stageInfo(n){
+  const venue=VENUE_IDS[Math.floor((n-1)/3)%VENUE_IDS.length];
+  const target=Math.round((8000+(n-1)*5000+Math.pow(n-1,1.5)*700)/500)*500;
+  const boss=n%5===0;
+  return {n,venue,target,boss,reward:2000+n*1000,diffAdd:Math.min(1.6,(n-1)*.12)};
+}
+// ---- quick choices ----
+const CHOICES=[{id:'x2',e:'💸',t:'x2 money',s:'10 seconds'},{id:'life',e:'❤️',t:'+1 life',s:'extra heart'},{id:'magnet',e:'🧲',t:'Magnet',s:'10 seconds'},
+  {id:'shield',e:'🛡️',t:'Shield',s:'10 seconds'},{id:'cash',e:'💰',t:'+₦3,000',s:'right now'},{id:'mystery',e:'🎲',t:'Mystery',s:'risky!'}];
 const STREAK_REWARDS={3:{bank:20000,txt:'3-day streak: +₦20,000 bonus'},7:{item:'acc:coral',txt:'7-day streak: Coral beads unlocked'},14:{bank:100000,txt:'14-day streak: +₦100,000 bonus'},30:{item:'fab:lace',txt:'30-day streak: Chairman gold lace unlocked'}};
 const DEFLOOK={sex:'m',outfit:'agbada',hat:'fila',fabric:'gold',head:'purple',skin:'#7a4a2c',acc:'none',sleeve:'long',shoe:'loafers'};
 let look=Object.assign({},DEFLOOK,store.get('owambe_look',{}));
@@ -692,17 +794,17 @@ function lookName(L){const o=OUTFITS[L.sex].find(x=>x[0]===L.outfit);return o?o[
 
 // ---------- game ----------
 function newGame(){
-  const cfg=mode==='daily'?dailyCfg():mode==='challenge'&&challenge?chalCfg():freeCfg();
+  const cfg=mode==='daily'?dailyCfg():mode==='challenge'&&challenge?chalCfg():mode==='ladder'?ladderCfg():freeCfg();
   R=cfg.seed!=null?mulberry32(cfg.seed):Math.random;
   setVenue(cfg.venue); style=venueStyle(cfg.venue);
   const m=cfg.mod;
   g={t:0,real:0,naira:0,disp:0,lives:3,combo:0,bestCombo:0,caught:0,escaped:0,items:[],parts:[],texts:[],
      sn:.6,sa:7,sp:11,hype:grand(26,32),stage:-1,shake:0,slow:0,flash:0,magnet:0,shield:0,storm:0,pulse:0,banner:null,ending:null,why:'',
-     cfg,mc:cfg.mc,mcMsg:null,mcCool:0,saidLow:false,dance:null,danceAt:[42,118,195,270],danceN:0,
+     cfg,mc:cfg.mc,diffAdd:cfg.diffAdd||0,target:cfg.target||0,cleared:false,c1000:0,pows:0,perfects:0,danceWins:0,choices:0,x2:0,nextChoice:grand(18,24),mcMsg:null,mcCool:0,saidLow:false,dance:null,danceAt:[42,118,195,270],danceN:0,
      money:m.money||1,speed:m.speed||1,auntyR:m.aunty||1,powR:m.pow||1,fakeAdd:m.fake||0,rich:!!m.rich};
   P={x:W/2,tx:W/2,vx:0,w:0,h:0,y:0,sq:0}; placePlayer();
 }
-const diff=()=>Math.min(4.2,1+g.t/32);
+const diff=()=>Math.min(4.6,1+g.t/32+(g.diffAdd||0));
 const mult=()=>1+Math.min(3,Math.floor(g.combo/10)*.5);
 
 function spawnNote(storm){
@@ -722,6 +824,24 @@ function spawnPow(){
   const opts=['chops','aso','bigman']; if(g.lives<5) opts.push('puff','puff');
   const x=grand(40*U,W-40*U);
   g.items.push({k:'pow',type:gpick(opts),bx:x,x,y:-30*U,vy:H*.13,ph:grand(0,6)});
+}
+function spawnChoice(){
+  const a=gpick(CHOICES); let b=gpick(CHOICES); while(b.id===a.id) b=gpick(CHOICES);
+  const pair=Math.random(), y=-50*U, vy=H*.1, w=W*.42, h=62*U;
+  g.items.push({k:'choice',opt:a,x:W*.26,y,vy,pair,w,h},{k:'choice',opt:b,x:W*.74,y,vy,pair,w,h});
+  floatText(W/2,H*.32,'Quick! Choose one 👇🏾','#ffc23d',true); sfx.level();
+}
+function applyChoice(o,x,y){
+  g.choices++; sfx.power(); burst(x,y,'#ffc23d',18);
+  if(o.id==='x2'){g.x2=10; banner('x2 MONEY!','10 seconds');}
+  if(o.id==='life'){if(g.lives<5) g.lives++; floatText(x,y,'+1 ❤','#ff6b9d',true);}
+  if(o.id==='magnet'){g.magnet=Math.max(g.magnet,10); floatText(x,y,'🧲 Magnet!','#4ecdc4',true);}
+  if(o.id==='shield'){g.shield=Math.max(g.shield,10); floatText(x,y,'🛡️ Shield!','#ffd93d',true);}
+  if(o.id==='cash'){const v=Math.round(3000*g.money); g.naira+=v; g.pulse=1; floatText(x,y,'+'+fmt(v),'#ffc23d',true);}
+  if(o.id==='mystery'){
+    if(Math.random()<.65){const v=Math.round((4000+Math.random()*6000)/100)*100; g.naira+=v; g.pulse=1; floatText(x,y,`🎲 Jackpot! +${fmt(v)}`,'#7ee081',true);}
+    else {floatText(x,y,'🎲 Aunties don see you! 😅','#ff9f1c',true); spawnAunty(); spawnAunty();}
+  }
 }
 function floatText(x,y,txt,col,big){g.texts.push({x,y,txt,col:col||'#fff',life:big?1.6:1,max:big?1.6:1,big:!!big});}
 function burst(x,y,col,n){for(let i=0;i<n;i++){const a=rand(0,6.28),s=rand(60,220)*U;g.parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-80*U,life:rand(.4,.8),max:.8,col,sz:rand(2,4.5)*U,sq:false});}}
@@ -744,8 +864,8 @@ function catchNote(it){
     floatText(W/2,H*.45,'Fake note! ₦5000 no dey exist 😤','#ff6b9d',true);
     sfx.fake(); mcSay('fake',true); loseLife('Fake money don catch you'); return;
   }
-  g.combo++; g.bestCombo=Math.max(g.bestCombo,g.combo); g.caught++;
-  const m=mult(), val=it.v*m*(g.storm>0?2:1)*g.money;
+  g.combo++; g.bestCombo=Math.max(g.bestCombo,g.combo); g.caught++; if(it.v===1000) g.c1000++;
+  const m=mult(), val=it.v*m*(g.storm>0?2:1)*(g.x2>0?2:1)*g.money;
   g.naira+=val; g.pulse=1; P.sq=1;
   floatText(it.x,it.y-12*U,'+'+fmt(val),it.v===1000?'#ffc23d':'#ffffff');
   burst(it.x,it.y,it.c1,7); sfx.catch(it.v,g.combo);
@@ -759,7 +879,7 @@ function hitAunty(a){
   sfx.aunty(); mcSay('hit',true); loseLife('Aunty don catch you');
 }
 function getPow(p){
-  const o=POWS[p.type]; burst(p.x,p.y,o.col,14); sfx.power();
+  const o=POWS[p.type]; burst(p.x,p.y,o.col,14); sfx.power(); g.pows++;
   if(p.type==='puff'){g.lives=Math.min(5,g.lives+1); floatText(p.x,p.y,'Puff-puff! +1 ❤','#ff9f43',true);}
   if(p.type==='chops'){g.magnet=7; floatText(p.x,p.y,'Small chops: Naira magnet!','#4ecdc4',true);}
   if(p.type==='aso'){g.shield=7; floatText(p.x,p.y,'Aso-ebi shield!','#ffd93d',true);}
@@ -768,7 +888,7 @@ function getPow(p){
 
 function update(dt){
   g.t+=dt;
-  for(const k of ['magnet','shield','storm']) if(g[k]>0) g[k]=Math.max(0,g[k]-dt);
+  for(const k of ['magnet','shield','storm','x2']) if(g[k]>0) g[k]=Math.max(0,g[k]-dt);
   if(g.pulse>0) g.pulse=Math.max(0,g.pulse-dt*4);
   if(g.flash>0) g.flash=Math.max(0,g.flash-dt);
   if(P.sq>0) P.sq=Math.max(0,P.sq-dt*6);
@@ -783,7 +903,7 @@ function update(dt){
   const st=Math.min(STAGES.length-1,Math.floor(g.t/25));
   if(st!==g.stage){
     g.stage=st;
-    if(st===0){const c=g.cfg; banner(c.mode==='daily'?`OWAMBE #${c.num}`:c.mode==='challenge'?`BEAT ${String(c.rival).toUpperCase()}: ${fmt(c.target)}`:'FREE PARTY', VENUES[c.venue].name+' · 🎵 '+STYLE_NAMES[style]); setTimeout(()=>mcSay('start',true),1300);}
+    if(st===0){const c=g.cfg; banner(c.mode==='daily'?`OWAMBE #${c.num}`:c.mode==='ladder'?`STAGE ${c.stage}${c.boss?' · BOSS':''}`:c.mode==='challenge'?`BEAT ${String(c.rival).toUpperCase()}: ${fmt(c.target)}`:'FREE PARTY', (c.mode==='ladder'?`Target ${fmt(c.target)} · `:'')+VENUES[c.venue].name+' · 🎵 '+STYLE_NAMES[style]); setTimeout(()=>mcSay('start',true),1300);}
     else {banner(STAGES[st],'Stage '+(st+1)); sfx.level(); mcSay('stage');}
   }
 
@@ -791,6 +911,11 @@ function update(dt){
     g.sn-=dt; if(g.sn<=0){spawnNote(g.storm>0); g.sn=g.storm>0?grand(.08,.14):Math.max(.3,grand(.7,1.05)/Math.pow(diff(),.8));}
     if(g.t>5){g.sa-=dt; if(g.sa<=0&&g.storm<=0){spawnAunty(); g.sa=Math.max(2.1,grand(5.5,8)/Math.pow(diff(),.85)/g.auntyR);}}
     g.sp-=dt; if(g.sp<=0){spawnPow(); g.sp=grand(9,14)/g.powR;}
+    if(g.t>=g.nextChoice&&g.storm<=0&&!g.items.some(i=>i.k==='choice')){
+      const nd=g.danceN<g.danceAt.length?g.danceAt[g.danceN]-g.t:99;
+      if(nd>9){spawnChoice(); g.nextChoice=g.t+grand(30,40);} else g.nextChoice=g.t+nd+6;
+    }
+    if(g.target&&!g.cleared&&g.naira>=g.target){g.cleared=true; banner('STAGE CLEAR! ✅','Keep going for extra naira'); sfx.level(); mcSay('combo',true);}
     g.hype-=dt; if(g.hype<=0){mcSay('hype',true); g.storm=Math.max(g.storm,3.5); floatText(W/2,H*.3,g.mc.name+' says SPRAY! 💸','#7ee081',true); g.hype=grand(32,42);}
     if(g.storm>0&&Math.random()<dt*30){g.parts.push({x:rand(0,W),y:-10,vx:rand(-30,30)*U,vy:rand(80,160)*U,life:2.5,max:2.5,col:pick(['#ffc23d','#7ee081','#ff6b9d','#4ecdc4','#fff']),sz:rand(3,6)*U,sq:true,rot:rand(0,6)});}
   }
@@ -812,6 +937,12 @@ function update(dt){
       else if(!it.hit&&it.y<P.y-170*U){const dx=P.x-it.x; it.x+=Math.sign(dx)*Math.min(Math.abs(dx),55*U*Math.min(diff(),2.6)*dt);}
       if(alive&&!it.hit&&Math.abs(it.x-P.x)<it.w*.42+P.w*.36&&Math.abs(it.y-P.y)<it.h*.4+P.h*.4) hitAunty(it);
       if(it.y>H+it.h){it.dead=true; if(!it.hit&&alive){g.escaped++; g.naira+=100; floatText(it.x,H-100*U,'Escaped! +₦100','#7ee081'); sfx.escape();}}
+    } else if(it.k==='choice'){
+      it.y+=it.vy*dt;
+      if(alive&&!it.dead&&Math.abs(it.x-P.x)<it.w*.5&&it.y>handY-34*U&&it.y<P.y){
+        for(const o of g.items) if(o.pair===it.pair){o.dead=true; if(o!==it) burst(o.x,o.y,'#888',8);}
+        applyChoice(it.opt,it.x,it.y);
+      } else if(it.y>H+80*U) it.dead=true;
     } else {
       it.y+=it.vy*dt; it.x=it.bx+Math.sin(g.t*2+it.ph)*14*U;
       if(alive&&Math.abs(it.x-P.x)<P.w*.8&&it.y>handY-24*U&&it.y<P.y+P.h*.2){it.dead=true; getPow(it);}
@@ -878,7 +1009,7 @@ function danceTap(m){
 }
 function judge(c,res){
   const d=g.dance; c.res=res;
-  if(res==='perfect'){d.perfect++; d.hype=Math.min(100,d.hype+10); d.streak++; tone(1320,.06,'triangle',.08); }
+  if(res==='perfect'){d.perfect++; g.perfects++; d.hype=Math.min(100,d.hype+10); d.streak++; tone(1320,.06,'triangle',.08); }
   else if(res==='good'){d.good++; d.hype=Math.min(100,d.hype+6); d.streak++; tone(990,.06,'triangle',.07);}
   else {d.miss++; d.hype=Math.max(0,d.hype-9); d.streak=0; d.move='miss'; d.moveT=d.pt; tone(160,.15,'sawtooth',.08,90);}
   d.judge={txt:res==='perfect'?'PERFECT!':res==='good'?'GOOD':'MISS',col:res==='perfect'?'#a6ff7e':res==='good'?'#7ee0ff':'#ff6b9d',t:.6};
@@ -903,7 +1034,7 @@ function updateDance(dt){
       d.phase='result'; d.rt=0; $('#danceBar').classList.remove('show');
       const pay=Math.round((d.perfect*1500+d.good*700)*(.5+d.hype/100)*g.money);
       d.pay=pay; g.naira+=pay; g.pulse=1;
-      const win=d.hype>=60;
+      const win=d.hype>=60; if(win) g.danceWins++;
       floatText(W/2,H*.44,win?`Crowd sprayed you ${fmt(pay)}! 💸`:`Small spray: ${fmt(pay)}`,win?'#ffc23d':'#e8d5ff',true);
       mcSay(win?'dance_win':'dance_lose',true);
       if(win){ sfx.power(); g.storm=0; }
@@ -1354,7 +1485,7 @@ function drawMC(){
   const m=g.mcMsg; if(!m) return;
   const age=m.max-m.t, a=Math.min(1,age*5,m.t*3), slide=(1-Math.min(1,age*6))*-30*U;
   ctx.save(); ctx.globalAlpha=a; ctx.translate(0,slide);
-  const x=12*U, y=100*U, w=W-24*U;
+  const x=12*U, y=(g.target?124:100)*U, w=W-24*U;
   ctx.font=`700 ${13*U}px Outfit, sans-serif`;
   const lines=wrap(ctx,'“'+m.txt+'”',w-70*U), h=Math.max(50*U,24*U+lines.length*16*U);
   ctx.fillStyle='rgba(15,5,25,.82)'; rr(ctx,x,y,w,h,14*U); ctx.fill();
@@ -1364,6 +1495,20 @@ function drawMC(){
   ctx.font=`800 ${10.5*U}px Outfit, sans-serif`; ctx.fillStyle=g.mc.color; ctx.fillText('🎤 '+g.mc.name.toUpperCase(),x+56*U,y+8*U);
   ctx.font=`700 ${13*U}px Outfit, sans-serif`; ctx.fillStyle='#fff';
   lines.forEach((l,i)=>ctx.fillText(l,x+56*U,y+22*U+i*16*U));
+  ctx.restore();
+}
+function drawChoice(it){
+  const w=it.w,h=it.h,x=it.x-w/2,y=it.y-h/2, pul=1+Math.sin(clock*6)*.03;
+  ctx.save(); ctx.translate(it.x,it.y); ctx.scale(pul,pul); ctx.translate(-it.x,-it.y);
+  ctx.fillStyle='rgba(0,0,0,.35)'; rr(ctx,x+3*U,y+5*U,w,h,14*U); ctx.fill();
+  const gr=ctx.createLinearGradient(0,y,0,y+h); gr.addColorStop(0,'#5a2a12'); gr.addColorStop(1,'#2e1408');
+  ctx.fillStyle=gr; rr(ctx,x,y,w,h,14*U); ctx.fill();
+  ctx.strokeStyle='#ffc23d'; ctx.lineWidth=2.5*U; ctx.stroke();
+  ctx.fillStyle='#f5efe6'; rr(ctx,x+6*U,y+h-9*U,w-12*U,4*U,2*U); ctx.fill();
+  ctx.textBaseline='middle'; ctx.textAlign='left';
+  ctx.font=`${24*U}px sans-serif`; ctx.fillText(it.opt.e,x+10*U,y+h*.45);
+  ctx.fillStyle='#fff'; ctx.font=`800 ${14*U}px Outfit, sans-serif`; ctx.fillText(it.opt.t,x+42*U,y+h*.34);
+  ctx.fillStyle='#e8c98f'; ctx.font=`600 ${11*U}px Outfit, sans-serif`; ctx.fillText(it.opt.s,x+42*U,y+h*.6);
   ctx.restore();
 }
 function drawHeart(x,y,s,full){
@@ -1381,8 +1526,15 @@ function drawHUD(){
   ctx.restore();
   for(let i=0;i<Math.max(3,g.lives);i++) drawHeart(26*U+i*22*U,52*U,8*U,i<g.lives);
   if(g.combo>=3){ctx.font=`800 ${13*U}px Outfit, sans-serif`; shadowText(`${g.combo} combo · x${mult()}`,16*U,76*U,mult()>1?'#7ee081':'#e8d5ff');}
+  if(g.target){
+    const bw=150*U, f=Math.min(1,g.naira/g.target), y=96*U;
+    ctx.fillStyle='rgba(0,0,0,.5)'; rr(ctx,16*U,y,bw,8*U,4*U); ctx.fill();
+    ctx.fillStyle=g.cleared?'#7ee081':'#ffc23d'; rr(ctx,16*U,y,Math.max(8*U,bw*f),8*U,4*U); ctx.fill();
+    ctx.font=`800 ${10.5*U}px Outfit, sans-serif`; ctx.textAlign='left'; ctx.textBaseline='top';
+    shadowText(g.cleared?`Stage ${g.cfg.stage} cleared ✅`:`Stage ${g.cfg.stage} target ${fmtK(g.target)}`,16*U,y+11*U,g.cleared?'#7ee081':'#e8d5ff');
+  }
   let x=W-14*U;
-  for(const [k,e,col,max] of [['storm','💸','#7ee081',5],['magnet','🧲','#4ecdc4',8],['shield','🛡️','#ffd93d',8]]){
+  for(const [k,e,col,max] of [['x2','✖️','#ff6b9d',10],['storm','💸','#7ee081',5],['magnet','🧲','#4ecdc4',8],['shield','🛡️','#ffd93d',8]]){
     if(g[k]>0){
       const y=62*U;
       ctx.fillStyle='rgba(0,0,0,.45)'; rr(ctx,x-64*U,y,64*U,22*U,11*U); ctx.fill();
@@ -1424,6 +1576,7 @@ function render(dt){
     if(g.storm>0){ctx.fillStyle=`rgba(255,200,60,${.07+.04*Math.sin(clock*8)})`; ctx.fillRect(0,0,W,H);}
     for(const it of g.items) if(it.k==='note') drawNote(it);
     for(const it of g.items) if(it.k==='pow') drawPow(it);
+    for(const it of g.items) if(it.k==='choice') drawChoice(it);
     if(g.dance) drawDance(); else drawPlayer();
     for(const it of g.items) if(it.k==='aunty') drawAunty(it);
     for(const p of g.parts){ctx.globalAlpha=clamp(p.life/p.max*1.5,0,1); ctx.fillStyle=p.col;
@@ -1520,7 +1673,7 @@ function buildWardrobe(){
   $('#wBack').textContent=start?'Back':'Cancel';
   if(!p.items.length){
     go.disabled=false; go.textContent=start?"Let's dance!":'Save my look';
-    if(!hint.textContent.startsWith('✓')) hint.textContent=start?(mode==='daily'?"Today's party: "+VENUES[dailyCfg().venue].name:mode==='challenge'&&challenge?`Challenge: beat ${challenge.nickname}'s ${fmt(challenge.haul)}`:'Free party · practice mode'):(shop?'Tap anything to try it on':'Your look is used for every party until you change it');
+    if(!hint.textContent.startsWith('✓')) hint.textContent=start?(mode==='daily'?"Today's party: "+VENUES[dailyCfg().venue].name:mode==='challenge'&&challenge?`Challenge: beat ${challenge.nickname}'s ${fmt(challenge.haul)}`:mode==='ladder'?`Ladder · Stage ${save.stage||1}`:'Free party · practice mode'):(shop?'Tap anything to try it on':'Your look is used for every party until you change it');
   }
   else if(save.bank>=p.total){go.disabled=false; go.textContent='Unlock for '+fmt(p.total)+(start?' & dance':''); hint.textContent='Unlocks: '+names.join(', ');}
   else {go.disabled=true; go.textContent='Need '+fmt(p.total-save.bank)+' more'; hint.textContent='Catch more naira to unlock '+names.join(', ');}
@@ -1548,7 +1701,21 @@ function drawLookAv(){
   lavc.save(); lavc.translate(S/2,S*.56-bob); lavc.rotate(Math.sin(bt*Math.PI)*.05);
   drawChar(lavc,look,w,h,false,{l:[-.47,-.47+.06*Math.sin(bt*2*Math.PI)],r:[.47,-.47-.06*Math.sin(bt*2*Math.PI)]}); lavc.restore();
 }
+function renderTasks(){
+  const TK=todayTasks(), next=TK.list.find(t=>!t.done), done=TK.list.filter(t=>t.done).length;
+  if(next){$('#taskTxt').textContent=taskText(next); $('#taskProg').textContent=`${progText(next)} · +${fmtK(next.reward)}`;}
+  else {$('#taskTxt').textContent='All 3 tasks done today! Odogwu 👑'; $('#taskProg').textContent='3/3';}
+  $('#taskList').innerHTML=TK.list.map(t=>`<div class="task${t.done?' done':''}"><div class="tx">${t.done?'✅ ':''}${esc(taskText(t))}<small>${progText(t)}</small><div class="bar"><i style="width:${Math.min(100,Math.round(t.prog/t.n*100))}%"></i></div></div><div class="tr">+${fmtK(t.reward)}</div></div>`).join('');
+}
+function renderLadder(){
+  const cur=save.stage||1, from=Math.max(1,cur-2), rows=[];
+  for(let n=cur+3;n>=from;n--){const S=stageInfo(n), st=n<cur?'done':n===cur?'cur':'lock';
+    rows.push(`<div class="stg ${st}"><div class="nd">${st==='done'?'✓':st==='lock'?'🔒':n}</div><div class="sx"><b>Stage ${n}${S.boss?' · 👵🏾 Boss':''}</b>${VENUES[S.venue].name}</div><div class="sr">Target ${fmtK(S.target)}<br><span style="color:#7ee081">+${fmtK(S.reward)}</span></div></div>`);}
+  $('#ladList').innerHTML=rows.join('');
+  $('#ladPlay').textContent=`▶ Play Stage ${cur}`;
+}
 function refreshMenu(){
+  renderTasks(); $('#ladLbl').textContent='Stage '+(save.stage||1);
   $('#lookName').textContent=hasLook()?lookSummary(look):'Pick your outfit before your first party';
   const c=dailyCfg();
   if(state==='menu') setVenue(c.venue);
@@ -1599,7 +1766,7 @@ function startGame(){
   saveLook(); show('wardrobe',false);
   initAudio(); newGame(); renderBoostBar(); state='play'; nextT=0; step=0; bar=0; startTrack();
   show('menu',false); show('over',false); show('pause',false); $('#hudbtns').classList.add('show');
-  $('#bragTxt').style.display='none'; $('#bragBtn').textContent=mode==='daily'?'Share result':'Copy my brag';
+  $('#bragTxt').style.display='none'; setLbl($('#bragBtn'),'Share');
 }
 function endGame(){
   state='over'; g.ending=null; stopTrack(); $('#hudbtns').classList.remove('show'); sfx.over();
@@ -1622,6 +1789,17 @@ function endGame(){
       }
     }
   }
+  if(c.mode==='ladder'){
+    if(g.cleared){save.stage=c.stage+1; save.bank+=c.reward; rewards.push(`🪜 Stage ${c.stage} cleared! +${fmt(c.reward)} · Stage ${c.stage+1} unlocked`);}
+    else rewards.push(`🪜 Stage ${c.stage}: ${fmt(haul)} of ${fmt(c.target)}. So close, try again!`);
+  }
+  // daily tasks
+  const TK=todayTasks();
+  for(const t of TK.list){ if(t.done) continue; const T=TASKS.find(x=>x.id===t.id), v=T.get(g,haul);
+    t.prog=T.kind==='best'?Math.max(t.prog,v):t.prog+v;
+    if(t.prog>=t.n){t.done=true; save.bank+=t.reward; rewards.push(`🎯 Task done: ${taskText(t)} · +${fmt(t.reward)}`);} }
+  // souvenir bag
+  g.souv=haul>=3000?rollSouvenir(haul):null;
   const LV=levelOf(save.earned);
   if(LV.i>lvBefore){rewards.push(`🎖 Level up! You're now ${LV.name} (Lv ${LV.lv})`); sfx.power();}
   if(haul>save.best){save.best=haul; if(c.mode!=='daily') isBest=true;}
@@ -1629,30 +1807,56 @@ function endGame(){
   let rank=RANKS[0][1]; for(const [v,n] of RANKS) if(haul>=v) rank=n;
   g.rank=rank;
   $('#overWhy').textContent=g.why||'Party don end';
-  $('#overMode').textContent=c.mode==='daily'?`Owambe #${c.num} · you went home with`:c.mode==='challenge'?`Challenge vs ${c.rival} · you went home with`:'Free party · you went home with';
+  $('#overMode').textContent=c.mode==='daily'?`Owambe #${c.num} · you went home with`:c.mode==='ladder'?`Stage ${c.stage}${c.boss?' (boss)':''} · you went home with`:c.mode==='challenge'?`Challenge vs ${c.rival} · you went home with`:'Free party · you went home with';
   const cr=$('#chRes');
   if(c.mode==='challenge'){const diffN=haul-c.target; cr.style.color=diffN>0?'#7ee081':'#ff9f1c'; cr.textContent=diffN>0?`🏆 You beat ${c.rival} by ${fmt(diffN)}!`:diffN===0?`🤝 Dead heat with ${c.rival}!`:`😤 ${c.rival} still dey lead by ${fmt(-diffN)}`;}
   else cr.textContent='';
-  $('#chalBtn').textContent='⚔️ Challenge a friend';
-  submitOnline({mode:c.mode,day:c.mode==='daily'?c.key:todayKey(),seed:c.seed,haul,caught:g.caught,combo:g.bestCombo,escaped:g.escaped,duration:Math.round(g.real*10)/10,mc:g.mc.id,outfit:levelOf(save.earned).name,challenge:c.code||null});
+  setLbl($('#chalBtn'),'Challenge');
+  setLbl($('#bragBtn'),'Share');
+  submitOnline({mode:c.mode==='ladder'?'free':c.mode,day:c.mode==='daily'?c.key:todayKey(),seed:c.seed,haul,caught:g.caught,combo:g.bestCombo,escaped:g.escaped,duration:Math.round(g.real*10)/10,mc:g.mc.id,outfit:levelOf(save.earned).name,challenge:c.code||null});
   $('#haul').textContent=fmt(haul); $('#rank').textContent=rank;
   $('#newBest').textContent=c.mode==='daily'?'🎉 Your best for today!':'🎉 New all-time best!';
   $('#newBest').style.display=isBest&&haul>0?'block':'none';
-  $('#stNotes').textContent=g.caught; $('#stCombo').textContent=g.bestCombo; $('#stAunty').textContent=g.escaped;
-  $('#earn').innerHTML=`<b>+${fmt(haul)}</b> banked · Bank: ${fmt(save.bank)}<br><span style="color:#ffc23d;font-weight:800">🎖 Lv ${LV.lv} · ${LV.name}</span>${LV.next?` <span style="color:#bfa9db">· ${fmt(LV.next[0]-save.earned)} to ${LV.next[1]}</span>`:''}`;
-  const sc=streakCount();
-  $('#streakLine').textContent=c.mode==='daily'?(sc?`🔥 ${sc}-day streak`:''):'Play the daily party to grow your streak 🔥';
+  $('#miniStats').textContent=`${g.caught} notes · best combo ${g.bestCombo} · ${g.escaped} aunties escaped`;
+  $('#tBank').textContent='+'+fmtK(haul); $('#tBankSub').textContent='bank '+fmtK(save.bank);
+  $('#tLvl').textContent='Lv '+LV.lv; $('#tLvlSub').textContent=LV.next?`${fmtK(LV.next[0]-save.earned)} to next`:'top level 👑';
+  const sc=streakCount(); $('#tStreak').textContent=sc; $('#tStreakSub').textContent=c.mode==='daily'?'day streak':'play daily 🔥';
+  const sb=$('#souvBtn'), stx=$('#souvTxt'); sb.className='bag'; sb.textContent='🎁'; stx.className='souvtxt';
+  if(g.souv){sb.disabled=false; stx.textContent='Tap your souvenir bag!';} else {sb.disabled=true; sb.classList.add('empty'); stx.textContent=`Go home with ${fmtK(3000)}+ to earn a souvenir bag`;}
+  $('#againBtn').textContent=c.mode==='ladder'?(g.cleared?`▶ Play Stage ${save.stage}`:'Try again'):'Dance again';
   $('#rewards').innerHTML=rewards.map(r=>`<div>${r}</div>`).join('');
   $('#mcQuote').textContent=`🎤 “${mcLine(g.mc,'end')}” · ${g.mc.name}`;
   show('over',true);
 }
+function rollSouvenir(haul){
+  const r=Math.random();
+  if(r<.45){const v=Math.max(2000,Math.round(haul*rand(.1,.3)/500)*500); save.bank+=v; return {e:'💰',t:`${fmt(v)} cash gift`};}
+  if(r<.8){const k=pick(Object.keys(BOOSTS)); save.boosts[k]=(save.boosts[k]||0)+1; return {e:BOOSTS[k].e,t:`Free ${BOOSTS[k].n} boost`};}
+  if(r<.92){
+    const c=[];
+    for(const f of FABRICS) if(f.p>0&&f.p<=40000&&!owns('fab:'+f.id)) c.push(['fab:'+f.id,f.n+' fabric']);
+    for(const [t,L] of [['outfit',OUTFITS[look.sex]],['hat',HATS[look.sex]],['shoe',SHOES[look.sex]],['acc',ACCS]]) for(const it of L) if(it[3]>0&&it[3]<=40000&&!owns(t+':'+it[0])) c.push([t+':'+it[0],it[1]]);
+    if(c.length){const [k,n]=pick(c); save.owned.push(k); return {e:'🎁',t:`${n} unlocked!`,rare:true};}
+  }
+  const v=Math.round((10000+haul*.5)/500)*500; save.bank+=v; return {e:'👑',t:`Big Man jackpot: ${fmt(v)}!`,rare:true};
+}
+$('#souvBtn').onclick=()=>{
+  if(!g||!g.souv||g.souvOpened) return; g.souvOpened=true;
+  const sb=$('#souvBtn'), stx=$('#souvTxt'); sb.classList.add('open'); sb.textContent=g.souv.e; sfx.power(); buzz(40);
+  stx.textContent=g.souv.t; if(g.souv.rare) stx.classList.add('rare');
+};
 function pauseGame(){ if(state!=='play'||g.ending!=null) return; state='pause'; show('pause',true); if(trackEl) trackEl.pause(); $('#danceBar').classList.remove('show'); }
 function resumeGame(){ if(state!=='pause') return; initAudio(); state='play'; show('pause',false); last=performance.now(); if(trackEl) trackEl.play().catch(()=>{}); if(g&&g.dance&&g.dance.phase==='play') $('#danceBar').classList.add('show'); }
-function goHome(){ state='menu'; g=null; stopTrack(); $('#danceBar').classList.remove('show'); ['pause','over','wardrobe'].forEach(i=>show(i,false)); $('#hudbtns').classList.remove('show'); refreshMenu(); show('menu',true); }
+function goHome(){ state='menu'; g=null; stopTrack(); $('#danceBar').classList.remove('show'); ['pause','over','wardrobe','ladder','tasksOv'].forEach(i=>show(i,false)); $('#hudbtns').classList.remove('show'); refreshMenu(); show('menu',true); }
 function setMute(m){ muted=m; store.set('owambe_muted',m); $('#muteBtn').textContent=m?'🔇':'🔊'; if(master) master.gain.value=m?0:.7; if(trackEl) trackEl.muted=m; }
 
 $('#dailyBtn').onclick=()=>play('daily');
-$('#freeBtn').onclick=()=>play('free');
+$('#freeBtn').onclick=()=>{renderLadder(); show('ladder',true);};
+$('#ladPlay').onclick=()=>{show('ladder',false); play('ladder');};
+$('#ladFree').onclick=()=>{show('ladder',false); play('free');};
+$('#ladClose').onclick=()=>show('ladder',false);
+$('#taskStrip').onclick=()=>{renderTasks(); show('tasksOv',true);};
+$('#tasksClose').onclick=()=>show('tasksOv',false);
 $('#lookBtn').onclick=()=>openWardrobe('edit','menu');
 $('#lookStage').onclick=()=>openWardrobe('edit','menu');
 $('#howBtn').onclick=()=>show('howto',true); $('#howClose').onclick=()=>show('howto',false);
@@ -1674,10 +1878,11 @@ $('#bragBtn').onclick=async()=>{
     : `I went home with ${$('#haul').textContent} on Owambe Survivor 💸, rocking my ${lookName(look)} (${g.rank}). Can you beat me?`;
   await shareText(sb?txt+'\n'+siteUrl():txt,$('#bragBtn'));
 };
+const setLbl=(b,t)=>{const e=b.querySelector('em'); (e||b).textContent=t;};
 async function shareText(txt,btn){
   if(navigator.share){try{await navigator.share({text:txt}); return;}catch(e){if(e&&e.name==='AbortError') return;}}
-  try{await navigator.clipboard.writeText(txt); btn.textContent='Copied! ✓';}
-  catch(e){const b=$('#bragTxt'); b.textContent=txt; b.style.display='block'; btn.textContent='Copy the text below';}
+  try{await navigator.clipboard.writeText(txt); setLbl(btn,'Copied ✓');}
+  catch(e){const b=$('#bragTxt'); b.textContent=txt; b.style.display='block'; setLbl(btn,'Copy below');}
 }
 
 // ---------- online: Supabase (only when config.js has keys; otherwise the game runs offline) ----------
@@ -1740,6 +1945,7 @@ function mergeSaves(a,b){
   out.streak=sA.last===sB.last?{last:sA.last,count:Math.max(sA.count||0,sB.count||0)}:((sB.last||'')>(sA.last||'')?sB:sA);
   const dA=A.daily||{key:null,best:0,plays:0}, dB=B.daily||{key:null,best:0,plays:0};
   out.daily=dA.key===dB.key?{key:dA.key,best:Math.max(dA.best||0,dB.best||0),plays:(dA.plays||0)+(dB.plays||0)}:((dB.key||'')>(dA.key||'')?dB:dA);
+  out.stage=Math.max(A.stage||1,B.stage||1);
   out.updatedAt=Date.now(); return out;
 }
 async function getCode(){
@@ -1805,11 +2011,11 @@ async function submitOnline(r){
 }
 async function makeChallenge(){
   if(!sb||!g) return;
-  const btn=$('#chalBtn'), c=g.cfg; btn.textContent='Creating link…';
+  const btn=$('#chalBtn'), c=g.cfg; setLbl(btn,'Creating…');
   if(!nick) await askNick();
   const {data,error}=await sb.rpc('create_challenge',{p_mode:c.mode==='daily'?'daily':'free',p_day:c.key||todayKey(),p_seed:c.seed,p_venue:c.venue,p_mod:c.mod.id,p_mc:c.mc.id,p_haul:Math.round(g.naira)});
-  if(error){btn.textContent='Try again'; return;}
-  btn.textContent='⚔️ Challenge a friend';
+  if(error){setLbl(btn,'Try again'); return;}
+  setLbl(btn,'Challenge');
   const url=baseUrl()+'?c='+data+(FORCED_MC?'&mc='+FORCED_MC.id:'');
   await shareText(`I went home with ${fmt(g.naira)} from the owambe 💸 Same party, same money. Can you beat me? ${url}`,btn);
 }
