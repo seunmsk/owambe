@@ -51,6 +51,15 @@ td.r,th.r{text-align:right}
 .err{color:var(--pink);font-size:13px;min-height:18px;margin-top:8px}
 .empty{color:var(--mut);font-size:13px;padding:8px 0}
 .hidden{display:none}
+.live{display:flex;flex-direction:column;gap:10px;border-color:rgba(126,224,129,.45);background:linear-gradient(135deg,rgba(126,224,129,.12),rgba(255,255,255,.04))}
+.live .top{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.live .dot{width:12px;height:12px;border-radius:50%;background:#7ee081;box-shadow:0 0 0 0 rgba(126,224,129,.7);animation:pulse 1.6s infinite}
+.live .dot.off{background:#6b5a80;animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(126,224,129,.7)}70%{box-shadow:0 0 0 12px rgba(126,224,129,0)}100%{box-shadow:0 0 0 0 rgba(126,224,129,0)}}
+.live .big{font-size:30px;font-weight:800}
+.live .lbl{font-size:12px;color:var(--mut)}
+.live .who{display:flex;flex-wrap:wrap;gap:6px}
+.live .who span{font-size:12px;background:rgba(255,255,255,.08);border-radius:999px;padding:4px 10px}
 </style>
 </head>
 <body>
@@ -69,6 +78,7 @@ td.r,th.r{text-align:right}
       <div style="display:flex;gap:8px"><button class="btn" id="refresh">↻ Refresh</button><button class="btn" id="logout">Lock</button></div>
     </header>
 
+    <div class="card live" id="live"></div>
     <h2>Today</h2>
     <div class="grid kpis" id="today"></div>
     <h2>Last 7 days</h2>
@@ -125,7 +135,7 @@ function table(rows,cols,empty){
   return `<table><tr>${cols.map(c=>`<th class="${c.r?'r':''}">${c.h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${cols.map(c=>`<td class="${c.r?'r':''}">${c.f?c.f(r):esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</table>`;
 }
 const MODE={daily:'Daily party',free:'Free practice',ladder:'Ladder',challenge:'Challenge'};
-const KIND={visit:'👀 Visit',game_start:'▶️ Started',game_end:'🏁 Finished',dance_end:'💃🏾 Dance-off',buy:'🛍️ Bought',share:'📣 Shared',challenge_create:'⚔️ Challenge sent',challenge_accept:'⚔️ Challenge accepted',task_done:'🎯 Task done',stage_clear:'🪜 Stage cleared',souvenir:'🎁 Souvenir',link_device:'📱 Linked device',nickname_set:'✍️ Named'};
+const KIND={ping:'💓 Online',visit:'👀 Visit',game_start:'▶️ Started',game_end:'🏁 Finished',dance_end:'💃🏾 Dance-off',buy:'🛍️ Bought',share:'📣 Shared',challenge_create:'⚔️ Challenge sent',challenge_accept:'⚔️ Challenge accepted',task_done:'🎯 Task done',stage_clear:'🪜 Stage cleared',souvenir:'🎁 Souvenir',link_device:'📱 Linked device',nickname_set:'✍️ Named'};
 function itemName(k){ if(!k) return '?'; const [t,id]=k.split(':'); const map={outfit:'Outfit',hat:'Headwear',shoe:'Footwear',acc:'Accessory',fab:'Fabric',boost:'Boost'}; return `${map[t]||t}: ${id}`; }
 function ago(t){const s=Math.round((Date.now()-new Date(t))/1000); if(s<60) return s+'s ago'; if(s<3600) return Math.round(s/60)+'m ago'; if(s<86400) return Math.round(s/3600)+'h ago'; return Math.round(s/86400)+'d ago';}
 function chart(daily){
@@ -142,8 +152,12 @@ function chart(daily){
   el.innerHTML=out.join('');
 }
 function render(s){
-  const t=s.today||{}, w=s.week||{}, a=s.all||{};
-  $('#upd').textContent=`Updated ${new Date(s.generated_at).toLocaleTimeString()} · refreshes every minute · all time: ${fmtN(a.visitors)} visitors, ${fmtN(a.players)} players, ${fmtN(a.games)} games`;
+  const t=s.today||{}, w=s.week||{}, a=s.all||{}, n=s.now||{online:0,playing:0,list:[]};
+  $('#live').innerHTML=`<div class="top"><div class="dot${n.online?'':' off'}"></div>
+    <div><div class="big">${fmtN(n.playing)}</div><div class="lbl">playing right now</div></div>
+    <div><div class="big" style="color:#bba6d6">${fmtN(n.online)}</div><div class="lbl">on the game (last 2 min)</div></div></div>
+    ${n.list&&n.list.length?`<div class="who">${n.list.map(p=>`<span>${p.state==='playing'?'🟢':p.state==='just finished'?'🏁':'⚪'} ${esc(p.state)}${p.mode?' · '+esc(MODE[p.mode]||p.mode):''}${p.mc?' · /'+esc(p.mc):''} ${p.mobile?'📱':'💻'}</span>`).join('')}</div>`:'<div class="lbl">Nobody on the game at the moment. This updates every 30 seconds.</div>'}`;
+  $('#upd').textContent=`Updated ${new Date(s.generated_at).toLocaleTimeString()} · refreshes every 30s · all time: ${fmtN(a.visitors)} visitors, ${fmtN(a.players)} players, ${fmtN(a.games)} games`;
   $('#today').innerHTML=kpi('Visitors',fmtN(t.visitors))+kpi('Players',fmtN(t.players),`${pct(t.players,t.visitors)} of visitors played`)+kpi('Games played',fmtN(t.games))+kpi('Shares & challenges',fmtN(t.shares));
   $('#week').innerHTML=kpi('Visitors',fmtN(w.visitors),`<i>${fmtN(s.returning)}</i> came back on another day · <i>${pct(w.mobile,w.visitors)}</i> on phones`)
     +kpi('Players',fmtN(w.players),`<i>${fmtN(s.named_players)}</i> have a leaderboard name`)
@@ -162,7 +176,7 @@ function render(s){
 async function open(){
   $('#err').textContent=''; $('#go').disabled=true; $('#go').textContent='Opening…';
   try{ const s=await fetchStats(); store('owambe_stats_code',code); $('#lock').classList.add('hidden'); $('#dash').classList.remove('hidden'); render(s);
-    clearInterval(timer); timer=setInterval(async()=>{try{render(await fetchStats())}catch(e){}},60000);
+    clearInterval(timer); timer=setInterval(async()=>{try{render(await fetchStats())}catch(e){}},30000);
   }catch(e){ $('#err').textContent=e.message; store('owambe_stats_code'); }
   $('#go').disabled=false; $('#go').textContent='Open dashboard';
 }

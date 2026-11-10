@@ -2042,8 +2042,10 @@ function track(kind,o){
   o=o||{};
   const e={p_device:DEV_ID,p_kind:kind,p_mode:o.mode||null,p_mc:LINK_MC,p_venue:o.venue||null,p_value:o.value!=null?Math.round(o.value):null,p_info:o.info!=null?String(o.info).slice(0,80):null,p_mobile:IS_MOBILE,p_secs:o.secs!=null?Math.round(o.secs):null};
   if(sb){ try{ sb.rpc('log_event',e).then(()=>{},()=>{}); }catch(_){} } else if(evQ.length<30) evQ.push(e);
-  try{ if(window.gtag) gtag('event',kind,{mode:o.mode,value:o.value,info:o.info,link:LINK_MC||'main'}); }catch(_){}
+  try{ if(window.gtag&&kind!=='ping') gtag('event',kind,{mode:o.mode,value:o.value,info:o.info,link:LINK_MC||'main'}); }catch(_){}
 }
+// heartbeat so the /stats page can show who is on the game right now
+setInterval(()=>{ if(document.visibilityState==='visible') track('ping',{info:state==='play'?'playing':state,mode:g&&g.cfg?g.cfg.mode:null}); },45000);
 function flushEvents(){ if(!sb) return; const q=evQ; evQ=[]; for(const e of q){ try{ sb.rpc('log_event',e).then(()=>{},()=>{}); }catch(_){} } }
 function trackVisit(){
   let src='direct';

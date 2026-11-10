@@ -60,6 +60,13 @@ begin
   end if;
   select json_build_object(
     'generated_at', now(),
+    'now', (select json_build_object(
+        'online',  count(*),
+        'playing', count(*) filter (where k in ('game_start','dance_end') or (k = 'ping' and i = 'playing')),
+        'list', coalesce(json_agg(json_build_object('at', a, 'state', case when k in ('game_start','dance_end') or (k = 'ping' and i = 'playing') then 'playing' when k = 'game_end' then 'just finished' else 'on the menu' end,
+                 'mode', m, 'mc', l, 'mobile', mob) order by a desc), '[]'::json))
+      from (select distinct on (device) device, kind as k, info as i, mode as m, mc as l, mobile as mob, at as a
+            from events where at >= now() - interval '2 minutes' order by device, at desc) live),
     'today', (select json_build_object(
         'visitors', count(distinct device) filter (where kind = 'visit'),
         'players',  count(distinct device) filter (where kind = 'game_start'),
@@ -117,7 +124,7 @@ begin
     'named_players', (select count(*) from players where nickname is not null),
     'recent', (select coalesce(json_agg(x), '[]'::json) from (
         select at, kind, mode, mc, value, info, mobile from events
-        where kind <> 'visit' or at >= now() - interval '2 hours'
+        where kind <> 'ping' and (kind <> 'visit' or at >= now() - interval '2 hours')
         order by at desc limit 30) x)
   ) into r;
   return r;
