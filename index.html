@@ -177,7 +177,7 @@ body:not(.online) .online-only{display:none!important}
 .tin{width:100%;margin-top:10px;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:800 20px Outfit,sans-serif;letter-spacing:.12em;text-align:center;text-transform:uppercase;-webkit-user-select:text;user-select:text}
 .syncbox{text-align:center;margin:14px 0 0}
 .syncbox .btn{margin-top:10px;font-size:16px;padding:12px}
-#over,#lb,#nick,#pause{background:radial-gradient(120% 70% at 50% 30%,rgba(35,12,55,.95),rgba(6,2,12,.97))}
+#over,#lb,#nick,#pause,#prep{background:radial-gradient(120% 70% at 50% 30%,rgba(35,12,55,.95),rgba(6,2,12,.97))}
 #wardrobe{background:radial-gradient(120% 70% at 50% 20%,rgba(45,15,70,.93),rgba(8,3,14,.97))}
 #pv{width:170px;height:190px;margin:2px 0 2px}
 .bankbar{font-size:13px;font-weight:800;color:#e8d5ff;margin-top:6px}
@@ -197,6 +197,26 @@ body:not(.online) .online-only{display:none!important}
 .sw button.lk::after{content:'🔒';position:absolute;right:-5px;bottom:-5px;font-size:12px}
 .hint{font-size:12px;color:#bfa9db;margin-top:8px;min-height:15px}
 .wd .btn{margin-top:16px}
+#prep{z-index:30}
+.blist{display:flex;flex-direction:column;gap:8px;width:100%}
+.bcard{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:9px 10px}
+.bcard .be{font-size:26px;width:44px;height:44px;flex:none;border-radius:12px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--c) 22%,transparent);position:relative}
+.bcard .be b{position:absolute;right:-6px;top:-6px;background:#7ee081;color:#06200a;font:800 11px Outfit,sans-serif;border-radius:9px;padding:1px 6px}
+.bcard .bt{flex:1;min-width:0;line-height:1.2}
+.bcard .bt b{font-size:14px;color:#fff}
+.bcard .bt small{display:block;font-size:11px;color:#a995c4}
+.bcard .bb{display:flex;flex-direction:column;gap:5px;flex:none}
+.bcard .bb button{appearance:none;border:0;border-radius:9px;font:800 12px Outfit,sans-serif;padding:6px 9px;cursor:pointer;background:linear-gradient(180deg,#ffd76a,#ffb21f);color:#2a0f00;white-space:nowrap}
+.bcard .bb button.p3{background:rgba(126,224,129,.18);color:#bff5c1;border:1px solid rgba(126,224,129,.45)}
+.bcard .bb button:disabled{opacity:.4}
+.deal{display:none;width:100%;margin:8px 0 6px;text-align:left;border-radius:16px;padding:10px 12px;background:linear-gradient(135deg,rgba(255,120,40,.28),rgba(255,40,120,.18));border:1px solid rgba(255,159,28,.55)}
+.deal.show{display:flex;align-items:center;gap:10px}
+.deal .dt{flex:1;line-height:1.25}
+.deal .dk{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#ffb35c}
+.deal .dn{font-size:15px;font-weight:800;color:#fff}
+.deal s{color:#bfa9db;font-size:12px;margin-right:4px}
+.deal .dp{color:var(--gold);font-weight:800}
+.deal button{appearance:none;border:0;border-radius:11px;font:800 13px Outfit,sans-serif;padding:9px 12px;cursor:pointer;background:linear-gradient(180deg,#ffd76a,#ffb21f);color:#2a0f00}
 </style>
 </head>
 <body>
@@ -245,6 +265,7 @@ body:not(.online) .online-only{display:none!important}
     <div class="dock">
       <button id="freeBtn"><span>🪜</span><em id="ladLbl">Ladder</em></button>
       <button id="lookBtn"><span>👗</span>Wardrobe</button>
+      <button id="ojaBtn"><span>🛍️</span>Oja</button>
       <button id="lbBtn" class="online-only"><span>🏆</span>Ranks</button>
       <button id="syncBtn" class="online-only"><span>📱</span>Devices</button>
       <button id="howBtn"><span>❓</span>How to play</button>
@@ -262,7 +283,7 @@ body:not(.online) .online-only{display:none!important}
       <li><span class="ic">👵🏾</span><span><b>Dodge the aunties</b> and their questions</span></li>
       <li><span class="ic">🍩</span><span><b>Grab small chops</b> for power-ups</span></li>
       <li><span class="ic">💃🏾</span><span><b>Dance-off!</b> When the MC calls you, tap the move on the beat</span></li>
-      <li><span class="ic">🏦</span><span><b>Everything you catch is banked.</b> Spend it in the Wardrobe shop</span></li>
+      <li><span class="ic">🏦</span><span><b>Everything you catch is banked.</b> Spend it in the Oja (market) on boosters &amp; drip</span></li>
       <li><span class="ic">🔥</span><span><b>A new party every day.</b> Keep your streak for rewards</span></li>
     </ul>
     <button class="btn" id="howClose" style="margin-top:14px">Got it</button>
@@ -270,11 +291,12 @@ body:not(.online) .online-only{display:none!important}
   </div></div>
 
   <div class="ov" id="wardrobe"><div class="inner wd">
-    <div class="kicker">Aso-ebi check</div>
-    <h2 class="sm">WARDROBE</h2>
+    <div class="kicker" id="wKick">Aso-ebi check</div>
+    <h2 class="sm" id="wTitle">WARDROBE</h2>
     <div class="bankbar">🏦 Bank: <b id="wBank">₦0</b></div>
+    <div class="deal" id="dealCard"></div>
+    <div class="seg" id="ojaTabs"><button data-o="boost">⚡ Boosters</button><button data-o="wear">👗 Clothes</button></div>
     <canvas id="pv"></canvas>
-    <div class="seg" id="wTabs"><button data-t="closet">👗 My closet</button><button data-t="shop">🛍️ Shop</button></div>
     <div class="seg" id="sexSeg" style="margin-top:4px"><button data-v="m">Man</button><button data-v="f">Woman</button></div>
     <div class="wrow" id="row_outfit"><div class="lbl">Outfit</div><div class="chips" id="outfitChips"></div></div>
     <div class="wrow" id="row_sleeve"><div class="lbl">Sleeves</div><div class="chips" id="sleeveChips"></div></div>
@@ -284,11 +306,23 @@ body:not(.online) .online-only{display:none!important}
     <div class="wrow" id="row_head"><div class="lbl" id="headLbl">Cap colour</div><div class="sw" id="headSw"></div></div>
     <div class="wrow" id="row_acc"><div class="lbl">Accessories</div><div class="chips" id="accChips"></div></div>
     <div class="wrow" id="row_skin"><div class="lbl">Skin tone</div><div class="sw" id="skinSw"></div></div>
-    <div class="wrow" id="row_boost"><div class="lbl">Party boosts</div><div class="lblsub" id="boostSub"></div><div class="chips" id="boostChips"></div></div>
+    <div class="wrow" id="row_boost"><div class="lbl">Party boosters</div><div class="lblsub" id="boostSub"></div><div class="blist" id="boostChips"></div></div>
     <div class="hint" id="shopEmpty"></div>
+    <button class="btn ghost wide" id="toOja">🛍️ Get more in the Oja</button>
     <button class="btn" id="goBtn">Let's dance!</button>
     <div class="hint" id="wHint"></div>
     <button class="btn ghost wide" id="wBack">Back</button>
+  </div></div>
+
+  <div class="ov" id="prep"><div class="inner">
+    <div class="kicker">Before you enter the hall</div>
+    <h2 class="sm">TAKE BOOSTERS?</h2>
+    <div class="msg">Tap them during the party when you need help.</div>
+    <div class="bankbar">🏦 Bank: <b id="pBank">₦0</b></div>
+    <div class="blist" id="prepList"></div>
+    <div class="hint" id="pHint"></div>
+    <button class="btn" id="prepGo">Let's dance!</button>
+    <button class="btn ghost wide" id="prepBack">Back</button>
   </div></div>
 
   <div class="ov" id="pause"><div class="inner">
@@ -325,6 +359,7 @@ body:not(.online) .online-only{display:none!important}
       <button id="chalBtn" class="online-only"><span>⚔️</span><em>Challenge</em></button>
       <button id="bragBtn"><span>📣</span><em>Share</em></button>
       <button id="outfitBtn"><span>👗</span><em>Wardrobe</em></button>
+      <button id="ojaBtn2"><span>🛍️</span><em>Oja</em></button>
       <button id="lbBtn2" class="online-only"><span>🏆</span><em>Ranks</em></button>
       <button id="homeBtn"><span>🏠</span><em>Home</em></button>
     </div>
@@ -1756,7 +1791,7 @@ function swatchBg(f){
   if(f.pat==='lace') return `radial-gradient(circle at 30% 30%,#fff5c4 0 2px,transparent 3px) 0 0/8px 8px,${f.c}`;
   return f.c;
 }
-let wMode='edit', wFrom='menu', wTab='closet', savedLook=JSON.parse(JSON.stringify(look));
+let wMode='edit', wFrom='menu', wTab='closet', ojaTab='boost', savedLook=JSON.parse(JSON.stringify(look));
 const DEFKEY={fabric:'gold',head:'purple',acc:'none'};
 function revertUnowned(){
   const map={outfit:'outfit',hat:'hat',shoe:'shoe',acc:'acc',fabric:'fab',head:'fab'};
@@ -1772,10 +1807,13 @@ function lookSummary(L){
   return [nm(OUTFITS[L.sex],L.outfit)+(short?' (short sleeve)':''),fabById(L.fabric).n,nm(HATS[L.sex],L.hat),nm(SHOES[L.sex],L.shoe)].filter(Boolean).join(' · ');
 }
 function buildWardrobe(){
-  const shop=wTab==='shop';
-  document.querySelectorAll('#wTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===wTab));
-  document.querySelectorAll('#sexSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===look.sex));
+  const shop=wTab==='shop', bt=shop&&ojaTab==='boost';
   const showRow=(id,on)=>{$('#'+id).style.display=on?'':'none';};
+  $('#wKick').textContent=shop?'Party market':'Aso-ebi check'; $('#wTitle').textContent=shop?'OJA':'WARDROBE';
+  showRow('ojaTabs',shop); showRow('pv',!bt); showRow('sexSeg',!bt); showRow('toOja',!shop&&wMode!=='start');
+  document.querySelectorAll('#ojaTabs button').forEach(b=>b.classList.toggle('on',b.dataset.o===ojaTab));
+  document.querySelectorAll('#sexSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===look.sex));
+  renderDeal(shop);
   let shopCount=0;
   const chips=(el,list,key,type)=>{el.innerHTML=''; let n=0;
     for(const[v,nm,sub,price]of list){const k=type+':'+v, lk=!unlocked(k); if(shop!==lk) continue; n++;
@@ -1798,32 +1836,75 @@ function buildWardrobe(){
   $('#fabLbl').textContent=shop?'Fabrics (for clothes & headwear)':'Fabric';
   const ss=$('#skinSw'); ss.innerHTML=''; for(const c of SKINS){const b=document.createElement('button');b.style.background=c;b.setAttribute('aria-label','Skin tone');b.className=look.skin===c?'on':'';b.onclick=()=>{look.skin=c;buildWardrobe();};ss.appendChild(b);}
   showRow('row_skin',!shop);
+  if(bt) for(const id of ['row_outfit','row_hat','row_shoe','row_acc','row_sleeve','row_fab','row_head']) showRow(id,false);
   $('#headLbl').textContent=look.sex==='m'?(look.outfit==='etibo'?'Cap & wrapper colour':look.outfit==='suit'?'Hat & tie colour':'Cap colour'):(look.outfit==='iro'?'Gele & ipele':look.outfit==='gown'?'Gele & print':look.outfit==='george'?'Gele & 2nd wrapper':look.outfit==='dinner'?'Accent colour':'Gele colour');
   // boosts: buy in the shop, see what you have in the closet
   const bc=$('#boostChips'); bc.innerHTML='';
   const have=Object.entries(BOOSTS).filter(([k])=>save.boosts[k]>0).map(([k,B])=>`${B.e} ${save.boosts[k]}`).join('  ·  ');
-  if(shop){
-    $('#boostSub').textContent='Buy now, tap them during the party when you need them';
-    for(const[k,B] of Object.entries(BOOSTS)){const b=document.createElement('button'); b.className='chip'; const n=save.boosts[k]||0;
-      b.innerHTML=`${B.e} ${B.n}<small>${B.d} · ${fmtK(B.p)}${n?` · <b style="color:#7ee081">you have ${n}</b>`:''}</small>`;
-      b.onclick=()=>{ if(save.bank<B.p){$('#wHint').textContent=`You need ${fmt(B.p-save.bank)} more for ${B.n}`; return;} save.bank-=B.p; save.boosts[k]=n+1; track('buy',{info:'boost:'+k,value:B.p}); persist(); sfx.buy(); buildWardrobe(); $('#wHint').textContent=`✓ ${B.n} added. Tap it during the party.`;};
-      bc.appendChild(b);}
-    showRow('row_boost',true);
-  } else { $('#boostSub').textContent='You have: '+have; showRow('row_boost',!!have); }
-  $('#shopEmpty').textContent=shop&&!shopCount?`You own every ${look.sex==='m'?"men's":"women's"} item. Odogwu! 👑`:'';
+  if(bt){
+    $('#boostSub').textContent='Buy now, tap them during the party when you need them. 3-packs save 10%.';
+    boostCards(bc,$('#wHint'),buildWardrobe); showRow('row_boost',true);
+  } else if(shop) showRow('row_boost',false);
+  else { $('#boostSub').textContent='You have: '+have; showRow('row_boost',!!have); }
+  $('#shopEmpty').textContent=shop&&!bt&&!shopCount?`You own every ${look.sex==='m'?"men's":"women's"} item. Odogwu! 👑`:'';
   $('#wBank').textContent=fmt(save.bank);
   const p=pendingItems(), go=$('#goBtn'), hint=$('#wHint');
   const names=p.items.map(k=>{const[t,id]=k.split(':');if(t==='fab')return fabById(id).n;const l=t==='acc'?ACCS:(t==='outfit'?OUTFITS:t==='shoe'?SHOES:HATS)[look.sex];const it=l.find(a=>a[0]===id);return it?it[1]:id;});
   const start=wMode==='start';
-  $('#wBack').textContent=start?'Back':'Cancel';
+  $('#wBack').textContent=start||shop?'Back':'Cancel';
   if(!p.items.length){
-    go.disabled=false; go.textContent=start?"Let's dance!":'Save my look';
-    if(!hint.textContent.startsWith('✓')) hint.textContent=start?(mode==='daily'?"Today's party: "+VENUES[dailyCfg().venue].name:mode==='challenge'&&challenge?`Challenge: beat ${challenge.nickname}'s ${fmt(challenge.haul)}`:mode==='ladder'?`Ladder · Stage ${save.stage||1}`:'Free party · practice mode'):(shop?'Tap anything to try it on':'Your look is used for every party until you change it');
+    go.disabled=false; go.textContent=start?"Let's dance!":'Save my look'; go.style.display=shop&&!start?'none':'';
+    if(!hint.textContent.startsWith('✓')) hint.textContent=start?(mode==='daily'?"Today's party: "+VENUES[dailyCfg().venue].name:mode==='challenge'&&challenge?`Challenge: beat ${challenge.nickname}'s ${fmt(challenge.haul)}`:mode==='ladder'?`Ladder · Stage ${save.stage||1}`:'Free party · practice mode'):(bt?'Boosters show up as buttons during the party':shop?'Tap anything to try it on':'Your look is used for every party until you change it');
   }
-  else if(save.bank>=p.total){go.disabled=false; go.textContent='Unlock for '+fmt(p.total)+(start?' & dance':''); hint.textContent='Unlocks: '+names.join(', ');}
-  else {go.disabled=true; go.textContent='Need '+fmt(p.total-save.bank)+' more'; hint.textContent='Catch more naira to unlock '+names.join(', ');}
+  else if(save.bank>=p.total){go.style.display=''; go.disabled=false; go.textContent='Unlock for '+fmt(p.total)+(start?' & dance':''); hint.textContent='Unlocks: '+names.join(', ');}
+  else {go.style.display=''; go.disabled=true; go.textContent='Need '+fmt(p.total-save.bank)+' more'; hint.textContent='Catch more naira to unlock '+names.join(', ');}
 }
-document.querySelectorAll('#wTabs button').forEach(b=>b.onclick=()=>{ if(wTab===b.dataset.t) return; wTab=b.dataset.t; if(wTab==='closet') revertUnowned(); $('#wHint').textContent=''; buildWardrobe(); $('#wardrobe').scrollTop=0; });
+document.querySelectorAll('#ojaTabs button').forEach(b=>b.onclick=()=>{ if(ojaTab===b.dataset.o) return; ojaTab=b.dataset.o; if(ojaTab==='boost') revertUnowned(); $('#wHint').textContent=''; buildWardrobe(); });
+$('#toOja').onclick=()=>{ wTab='shop'; ojaTab='wear'; $('#wHint').textContent=''; buildWardrobe(); $('#wardrobe').scrollTop=0; };
+// ---------- oja (market): boosters, bundles, today's deal ----------
+const pack3=B=>Math.round(B.p*2.7/1000)*1000;
+function buyBoost(k,n,hint){
+  const B=BOOSTS[k], cost=n===3?pack3(B):B.p;
+  if(save.bank<cost){hint.textContent=`You need ${fmt(cost-save.bank)} more for ${n===3?'the 3-pack':B.n}`; return false;}
+  save.bank-=cost; save.boosts[k]=(save.boosts[k]||0)+n; track('buy',{info:'boost:'+k+(n===3?' x3':''),value:cost}); persist(); sfx.buy();
+  hint.textContent=`✓ ${n===3?'3 × ':''}${B.n} added. Tap it during the party.`; return true;
+}
+function boostCards(el,hint,after){
+  el.innerHTML='';
+  for(const[k,B] of Object.entries(BOOSTS)){const n=save.boosts[k]||0, d=document.createElement('div'); d.className='bcard'; d.style.setProperty('--c',B.c);
+    d.innerHTML=`<div class="be">${B.e}${n?`<b>${n}</b>`:''}</div><div class="bt"><b>${B.n}</b><small>${B.d}${n?` · you have ${n}`:''}</small></div><div class="bb"><button data-n="1">${fmtK(B.p)}</button><button class="p3" data-n="3">3 for ${fmtK(pack3(B))}</button></div>`;
+    d.querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(buyBoost(k,+b.dataset.n,hint)) after(); });
+    el.appendChild(d);}
+}
+function dealToday(){
+  if(save.dealKey===todayKey()) return {claimed:true};
+  const sx=look.sex, c=[];
+  const add=(t,list,key)=>{for(const[id,nm,,price] of list) if(price>0&&!owns(t+':'+id)) c.push({k:t+':'+id,n:nm,p:price,key,id});};
+  add('outfit',OUTFITS[sx],'outfit'); add('hat',HATS[sx],'hat'); add('shoe',SHOES[sx],'shoe'); add('acc',ACCS,'acc');
+  for(const f of FABRICS) if(f.p>0&&!owns('fab:'+f.id)) c.push({k:'fab:'+f.id,n:f.n+' fabric',p:f.p,key:'fabric',id:f.id});
+  let d;
+  if(!c.length){const full=Object.values(BOOSTS).reduce((a,B)=>a+B.p,0); d={pack:true,n:'Booster pack: one of each',p:full};}
+  else d=c[hashStr(todayKey()+sx)%c.length];
+  d.dp=Math.round(d.p*.7/500)*500; return d;
+}
+function renderDeal(on){
+  const el=$('#dealCard'); el.classList.toggle('show',on); if(!on) return;
+  const d=dealToday();
+  if(d.claimed){el.innerHTML=`<div class="dt"><div class="dk">🔥 Today's deal</div><div class="dn">✓ Claimed. New deal tomorrow!</div></div>`; return;}
+  el.innerHTML=`<div class="dt"><div class="dk">🔥 Today's deal · 30% off</div><div class="dn">${d.n}</div><s>${fmt(d.p)}</s><span class="dp">${fmt(d.dp)}</span></div><button id="dealBuy">Buy</button>`;
+  $('#dealBuy').onclick=()=>{ const h=$('#wHint');
+    if(save.bank<d.dp){h.textContent=`You need ${fmt(d.dp-save.bank)} more for today's deal`; return;}
+    save.bank-=d.dp; save.dealKey=todayKey();
+    if(d.pack){ for(const k of Object.keys(BOOSTS)) save.boosts[k]=(save.boosts[k]||0)+1; }
+    else { save.owned.push(d.k); revertUnowned(); look[d.key]=d.id; saveLook(); ojaTab='wear'; }
+    track('buy',{info:'deal:'+(d.pack?'pack':d.k),value:d.dp}); persist(); sfx.buy(); buildWardrobe();
+    h.textContent=d.pack?'✓ Booster pack added':`✓ ${d.n} is yours, and you're wearing it`; };
+}
+// ---------- pre-party booster check ----------
+function canPrep(){ return Object.values(save.boosts||{}).some(n=>n>0)||save.bank>=Math.min(...Object.values(BOOSTS).map(B=>B.p)); }
+function renderPrep(){ $('#pBank').textContent=fmt(save.bank); boostCards($('#prepList'),$('#pHint'),renderPrep); }
+function openPrep(){ state='prep'; $('#pHint').textContent=''; renderPrep(); show('menu',false); show('over',false); show('prep',true); $('#prep').scrollTop=0; }
+function enterParty(){ if(canPrep()) openPrep(); else startGame(); }
 document.querySelectorAll('#sexSeg button').forEach(b=>b.onclick=()=>{
   if(look.sex===b.dataset.v) return; look.sex=b.dataset.v; look.outfit=OUTFITS[look.sex][0][0]; look.hat=HATS[look.sex][0][0]; look.shoe=SHOES[look.sex][0][0]; buildWardrobe();
 });
@@ -1896,19 +1977,19 @@ function frame(t){
 }
 function show(id,on){$('#'+id).classList.toggle('show',on);}
 function hasLook(){ return store.get('owambe_look',null)!=null; }
-function play(m){ mode=m; if(!hasLook()||pendingItems().items.length){ openWardrobe('start'); return; } startGame(); }
+function play(m){ mode=m; if(!hasLook()||pendingItems().items.length){ openWardrobe('start'); return; } enterParty(); }
 function buyPending(){ const p=pendingItems(); if(!p.items.length) return true; if(save.bank<p.total) return false; save.bank-=p.total; save.owned.push(...p.items); for(const k of p.items) track('buy',{info:k,value:itemPrice(k)}); persist(); sfx.buy(); return true; }
 function saveLook(){ store.set('owambe_look',look); savedLook=JSON.parse(JSON.stringify(look)); persist(); }
 function closeWardrobe(){ show('wardrobe',false); if(wFrom==='over'&&g){ state='over'; show('over',true); } else goHome(); }
-function openWardrobe(kind,from){
-  wMode=kind||'edit'; wFrom=from||(state==='over'?'over':'menu'); wTab='closet';
+function openWardrobe(kind,from,tab,otab){
+  wMode=kind||'edit'; wFrom=from||(state==='over'?'over':'menu'); wTab=tab||'closet'; ojaTab=otab||'boost';
   savedLook=JSON.parse(JSON.stringify(look)); $('#wHint').textContent='';
   initAudio(); state='wardrobe'; buildWardrobe();
   show('menu',false); show('over',false); show('pause',false); show('wardrobe',true); $('#wardrobe').scrollTop=0;
 }
 function startGame(){
   if(!buyPending()) return;
-  saveLook(); show('wardrobe',false);
+  saveLook(); show('wardrobe',false); show('prep',false);
   initAudio(); newGame(); renderBoostBar(); state='play';
   track('game_start',{mode:g.cfg.mode,venue:g.cfg.venue}); nextT=0; step=0; bar=0; startTrack();
   show('menu',false); show('over',false); show('pause',false); $('#hudbtns').classList.add('show');
@@ -1994,7 +2075,7 @@ $('#souvBtn').onclick=()=>{
 };
 function pauseGame(){ if(state!=='play'||g.ending!=null) return; state='pause'; show('pause',true); if(trackEl) trackEl.pause(); $('#danceBar').classList.remove('show'); }
 function resumeGame(){ if(state!=='pause') return; initAudio(); state='play'; show('pause',false); last=performance.now(); if(trackEl) trackEl.play().catch(()=>{}); if(g&&g.dance&&g.dance.phase==='play') $('#danceBar').classList.add('show'); }
-function goHome(){ state='menu'; g=null; stopTrack(); $('#danceBar').classList.remove('show'); ['pause','over','wardrobe','ladder','tasksOv'].forEach(i=>show(i,false)); $('#hudbtns').classList.remove('show'); refreshMenu(); show('menu',true); }
+function goHome(){ state='menu'; g=null; stopTrack(); $('#danceBar').classList.remove('show'); ['pause','over','wardrobe','ladder','tasksOv','prep'].forEach(i=>show(i,false)); $('#hudbtns').classList.remove('show'); refreshMenu(); show('menu',true); }
 function setMute(m){ muted=m; store.set('owambe_muted',m); $('#muteBtn').textContent=m?'🔇':'🔊'; if(master) master.gain.value=m?0:.7; if(trackEl) trackEl.muted=m; }
 
 $('#dailyBtn').onclick=()=>play('daily');
@@ -2006,9 +2087,12 @@ $('#taskStrip').onclick=()=>{renderTasks(); show('tasksOv',true);};
 $('#tasksClose').onclick=()=>show('tasksOv',false);
 $('#lookBtn').onclick=()=>openWardrobe('edit','menu');
 $('#lookStage').onclick=()=>openWardrobe('edit','menu');
+$('#ojaBtn').onclick=()=>openWardrobe('edit','menu','shop','boost');
+$('#ojaBtn2').onclick=()=>openWardrobe('edit','over','shop','boost');
+$('#prepGo').onclick=startGame; $('#prepBack').onclick=goHome;
 $('#howBtn').onclick=()=>show('howto',true); $('#howClose').onclick=()=>show('howto',false);
 $('#goBtn').onclick=()=>{
-  if(wMode==='start'){ startGame(); return; }
+  if(wMode==='start'){ if(!buyPending()) return; saveLook(); show('wardrobe',false); enterParty(); return; }
   if(!buyPending()) return;
   const bought=wTab==='shop'; saveLook();
   if(bought){ buildWardrobe(); $('#wHint').textContent='✓ Unlocked and saved to your closet'; } else closeWardrobe();
@@ -2116,6 +2200,7 @@ function mergeSaves(a,b){
   const dA=A.daily||{key:null,best:0,plays:0}, dB=B.daily||{key:null,best:0,plays:0};
   out.daily=dA.key===dB.key?{key:dA.key,best:Math.max(dA.best||0,dB.best||0),plays:(dA.plays||0)+(dB.plays||0)}:((dB.key||'')>(dA.key||'')?dB:dA);
   out.stage=Math.max(A.stage||1,B.stage||1);
+  out.dealKey=[A.dealKey||'',B.dealKey||''].sort().pop()||null;
   out.updatedAt=Date.now(); return out;
 }
 async function getCode(){
@@ -2214,7 +2299,7 @@ window.addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.l=true;
   if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') keys.r=true;
   if(e.key==='Escape'||e.key==='p'||e.key==='P'){state==='play'?pauseGame():resumeGame();}
-  if(e.key==='Enter'&&(state==='menu'||state==='over'||state==='wardrobe')){e.preventDefault(); if(state==='menu') play('daily'); else if(state==='wardrobe') $('#goBtn').click(); else startGame();}
+  if(e.key==='Enter'&&(state==='menu'||state==='over'||state==='wardrobe'||state==='prep')){e.preventDefault(); if(state==='menu') play('daily'); else if(state==='wardrobe') $('#goBtn').click(); else startGame();}
 });
 window.addEventListener('keyup',e=>{
   if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.l=false;
