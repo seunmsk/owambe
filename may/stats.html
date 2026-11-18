@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>May's Hair Studio · Seun's dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/config.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Fredoka,system-ui,sans-serif;background:#fde7f0;color:#4a2038;min-height:100vh}
+.wrap{max-width:900px;margin:0 auto;padding:20px 14px 60px}
+h1{font-size:26px;color:#e0408a}
+.sub{color:#a0587c;font-size:14px;margin-top:2px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.btn{border:0;background:#fff;color:#c4497f;font:600 13px Fredoka,sans-serif;padding:8px 14px;border-radius:12px;cursor:pointer;box-shadow:0 2px 0 #f2b6cf}
+.card{background:#fff;border-radius:18px;padding:14px;box-shadow:0 2px 0 #f6c9db}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.k b{display:block;font-size:28px;color:#e0408a}
+.k span{font-size:13px;color:#a0587c}
+.alert{border-radius:16px;padding:12px 14px;margin:12px 0 0;font-weight:500;font-size:15px}
+.alert.up{background:#fff3cd;color:#7a5200}
+.alert.nudge{background:#e7f0ff;color:#24467a}
+.alert.ok{background:#e6f8ee;color:#1f6b40}
+h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#d0477f;margin:22px 0 10px}
+.live{display:flex;align-items:center;gap:8px;font-weight:600}
+.dot{width:12px;height:12px;border-radius:50%;background:#bbb}
+.dot.on{background:#2fbf6c;box-shadow:0 0 0 0 rgba(47,191,108,.6);animation:p 1.6s infinite}
+@keyframes p{70%{box-shadow:0 0 0 10px rgba(47,191,108,0)}100%{box-shadow:0 0 0 0 rgba(47,191,108,0)}}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.pol{background:#fff;border-radius:6px;padding:6px 6px 8px;box-shadow:0 4px 12px rgba(180,60,110,.15);font-size:12.5px}
+.pol img,.pol .ph{width:100%;aspect-ratio:132/150;border-radius:3px;display:block;background:#fde7f0;object-fit:cover}
+.pol b{display:block;margin-top:5px;font-size:14px}
+.pol small{color:#a0587c;display:block}
+.pol .w{margin-top:3px;color:#6d3a55;font-size:11.5px;line-height:1.35}
+.bars{display:flex;align-items:flex-end;gap:5px;height:130px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:#a0587c}
+.bars i{display:block;width:100%;background:linear-gradient(180deg,#ff8dbb,#ec4b8f);border-radius:6px 6px 2px 2px;min-height:2px}
+.bars em{font-style:normal;font-weight:600;color:#4a2038;font-size:11px}
+.ul{display:flex;flex-direction:column;gap:6px}
+.ul div{display:flex;justify-content:space-between;gap:10px;font-size:14px;border-bottom:1px dashed #f6c9db;padding-bottom:6px}
+.ul div:last-child{border:0}
+.ul .got{color:#1f9150;font-weight:600}
+.ul .no{color:#b9a0ad}
+#lock{max-width:340px;margin:12vh auto 0;text-align:center}
+#lock input{width:100%;padding:12px;border-radius:14px;border:2px solid #f6c9db;font:500 17px Fredoka,sans-serif;margin:14px 0 10px;text-align:center}
+#err{color:#d63452;font-size:14px;min-height:18px}
+.hidden{display:none}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+.empty{color:#a0587c;font-size:14px;padding:6px 0}
+</style>
+</head>
+<body>
+<div id="lock" class="card"><h1>💇🏾‍♀️ May's Salon</h1><div class="sub">Seun's private dashboard</div>
+  <input id="code" type="password" placeholder="Stats passcode" autocomplete="off"><button class="btn" id="go">Open</button><div id="err"></div></div>
+<div class="wrap hidden" id="dash">
+  <header><div><h1>💇🏾‍♀️ May's Hair Studio</h1><div class="sub">How she's playing · refreshes every 30s</div></div>
+    <div><a class="btn" href="/stats" style="text-decoration:none">Owambe stats</a> <button class="btn" id="out">Lock</button></div></header>
+  <div class="card live"><span class="dot" id="ldot"></span><span id="ltxt">Not playing right now</span></div>
+  <div class="kpis" style="margin-top:12px">
+    <div class="card k"><b id="kStars">0</b><span>stars earned</span></div>
+    <div class="card k"><b id="kClients">0</b><span>clients done</span></div>
+    <div class="card k"><b id="kDays">0</b><span>days she's played</span></div>
+    <div class="card k"><b id="kSeen">–</b><span>last played</span></div>
+  </div>
+  <div id="alerts"></div>
+  <h2>Her latest looks</h2>
+  <div class="gal" id="gal"></div>
+  <div class="two">
+    <div><h2>Clients per day (14 days)</h2><div class="card"><div class="bars" id="bars"></div></div></div>
+    <div><h2>Unlocks</h2><div class="card ul" id="ul"></div></div>
+  </div>
+  <h2>Devices</h2><div class="card ul" id="devs"></div>
+</div>
+<script>
+const UNLOCKS=[[8,'Ombre tab'],[10,'Headband'],[15,'Blue & Ginger dye'],[25,'Tiara'],[35,'Teal & Silver dye'],[45,'Gold beads']];
+const CFG=window.OWAMBE_CONFIG||{}; const $=s=>document.querySelector(s);
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let sb=null, code='', timer=null;
+const st=(k,v)=>{try{v===undefined?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}; const ld=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+function ago(t){ const s=(Date.now()-new Date(t))/1000; if(s<90) return 'just now'; if(s<3600) return Math.round(s/60)+' min ago'; if(s<86400) return Math.round(s/3600)+'h ago'; const d=Math.round(s/86400); return d===1?'yesterday':d+' days ago'; }
+function when(t){ return new Date(t).toLocaleString('en-NG',{weekday:'short',hour:'numeric',minute:'2-digit',timeZone:'Africa/Lagos'}); }
+async function client(){ if(sb) return sb; if(!window.supabase) await new Promise((r,j)=>{const e=document.createElement('script');e.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';e.onload=r;e.onerror=j;document.head.appendChild(e);});
+  sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey,{auth:{persistSession:false}}); return sb; }
+async function fetchIt(){ const c=await client(); const {data,error}=await c.rpc('get_salon',{p_code:code});
+  if(error) throw new Error(/passcode/i.test(error.message)?'Wrong passcode':/get_salon/i.test(error.message)?'Run supabase/005_salon.sql in Supabase first':error.message); return data; }
+function render(d){
+  const P=d.players||[], top=P[0]; const lat=(top&&top.latest)||{};
+  const stars=Math.max(0,...P.map(p=>(p.latest||{}).stars||0)); const clients=P.reduce((a,p)=>a+p.clients,0); const days=P.reduce((a,p)=>Math.max(a,p.days_played),0);
+  $('#kStars').textContent=stars; $('#kClients').textContent=clients; $('#kDays').textContent=days; $('#kSeen').textContent=top?ago(top.last_seen):'never';
+  $('#ldot').classList.toggle('on',d.online>0); $('#ltxt').textContent=d.online>0?'She’s in the salon right now!':top?'Not playing right now · last seen '+ago(top.last_seen):'She hasn’t opened it yet';
+  const al=[]; const next=UNLOCKS.find(u=>u[0]>stars);
+  if(!top) al.push(['nudge','💌 No plays yet. Send her the link: <b>owambe.pages.dev/may</b>']);
+  else if(!next) al.push(['up','🎉 She has unlocked <b>everything</b>. Time for an update: new styles, colours or a new feature.']);
+  else if(next[0]-stars<=3) al.push(['up',`⏳ She’s close to unlocking <b>${next[1]}</b> (${next[0]-stars} ⭐ to go). Get the next update ready.`]);
+  else al.push(['ok',`Next unlock: <b>${next[1]}</b> at ${next[0]} ⭐ (${next[0]-stars} to go)`]);
+  if(top){ const dd=(Date.now()-new Date(top.last_seen))/864e5; if(dd>=3) al.push(['nudge',`💤 She hasn’t played in ${Math.floor(dd)} days. A new feature or a little nudge might bring her back.`]); }
+  $('#alerts').innerHTML=al.map(a=>`<div class="alert ${a[0]}">${a[1]}</div>`).join('');
+  const C=d.clients||[]; $('#gal').innerHTML=C.length?C.map(c=>{const x=c.data||{}; return `<div class="pol">${/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(x.thumb||'')?`<img src="${x.thumb}" alt="">`:'<div class="ph"></div>'}<b>${esc(x.name)} ${'⭐'.repeat(x.got||0)}</b><small>${x.got}/${x.of} wishes · ${when(c.at)}${x.secs?` · ${Math.round(x.secs/60*10)/10} min`:''}</small><div class="w">${(x.wishes||[]).map(esc).join(' · ')}</div></div>`;}).join(''):'<div class="empty">No finished clients yet.</div>';
+  const map={}; (d.daily||[]).forEach(r=>map[r.day]=r.clients); const out=[]; for(let i=13;i>=0;i--){const dt=new Date(Date.now()-i*864e5); const k=dt.toLocaleDateString('en-CA',{timeZone:'Africa/Lagos'}); out.push([k,map[k]||0]);}
+  const mx=Math.max(1,...out.map(o=>o[1])); $('#bars').innerHTML=out.map(([k,v])=>`<div><em>${v||''}</em><i style="height:${v/mx*100}%"></i>${k.slice(8)}</div>`).join('');
+  const U=d.unlocks||[]; $('#ul').innerHTML=UNLOCKS.map(([n,nm])=>{const u=U.find(x=>(x.data.items||[]).some(i=>nm.toLowerCase().startsWith(i.toLowerCase().split(' ')[0])))||null; return `<div><span class="${stars>=n?'got':'no'}">${stars>=n?'✓':'🔒'} ${nm}</span><span class="no">${stars>=n?(u?when(u.at):'unlocked'):n+' ⭐'}</span></div>`;}).join('');
+  $('#devs').innerHTML=P.length?P.map(p=>`<div><span>${(p.latest||{}).mobile?'📱 Phone':'💻 Laptop/other'} · ${p.opens} visits · ${p.clients} clients</span><span class="no">first ${when(p.first_seen)}</span></div>`).join(''):'<div class="empty">No devices yet.</div>';
+}
+async function open(){ $('#err').textContent=''; try{ const d=await fetchIt(); st('owambe_stats_code',code); $('#lock').classList.add('hidden'); $('#dash').classList.remove('hidden'); render(d);
+  clearInterval(timer); timer=setInterval(async()=>{ try{ render(await fetchIt()); }catch(e){} },30000); }catch(e){ $('#err').textContent=e.message; } }
+$('#go').onclick=()=>{ code=$('#code').value.trim(); if(code) open(); };
+$('#code').onkeydown=e=>{ if(e.key==='Enter') $('#go').click(); };
+$('#out').onclick=()=>{ st('owambe_stats_code'); location.reload(); };
+const saved=ld('owambe_stats_code'); if(saved){ code=saved; open(); }
+</script>
+</body>
+</html>
