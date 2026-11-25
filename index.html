@@ -22,7 +22,29 @@
 :root{--gold:#ffc23d;--purple:#7b2cbf;--bg:#0b0612;--ink:#fff7e6}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:#050308;overflow:hidden;font-family:Outfit,system-ui,sans-serif;color:var(--ink);overscroll-behavior:none;-webkit-user-select:none;user-select:none}
-#wrap{position:relative;height:100%;max-width:480px;margin:0 auto;overflow:hidden;background:var(--bg);box-shadow:0 0 80px rgba(123,44,191,.25)}
+#wrap{position:relative;z-index:1;height:100%;max-width:480px;margin:0 auto;overflow:hidden;background:var(--bg);box-shadow:0 0 80px rgba(123,44,191,.25)}
+#bgfull{position:fixed;inset:-40px;width:calc(100% + 80px);height:calc(100% + 80px);z-index:0;filter:blur(22px) brightness(.55) saturate(1.2);pointer-events:none}
+.hleft,.hright,.hright2,.hleft2,.hright3{display:contents}
+.tagline{display:none}
+@media (min-width:760px){
+  #wrap{max-width:min(560px,78vh);box-shadow:0 0 0 1px rgba(255,194,61,.22),0 0 90px rgba(0,0,0,.75),0 0 60px rgba(123,44,191,.4)}
+  body.wide #wrap{max-width:none;box-shadow:none}
+}
+@media (min-width:900px) and (min-aspect-ratio:5/4){
+  body.wide #menu .inner.home{max-width:1120px;display:grid;grid-template-columns:minmax(0,1fr) 430px;grid-template-rows:auto auto auto;column-gap:clamp(40px,6vw,96px);row-gap:0;align-items:center;padding:0 24px}
+  body.wide #menu .hleft,body.wide #menu .hleft2{display:flex;flex-direction:column;align-items:flex-start;text-align:left;grid-column:1}
+  body.wide #menu .hleft{grid-row:1/span 2;align-self:end}
+  body.wide #menu .hleft2{grid-row:3;align-self:center}
+  body.wide #menu .hright,body.wide #menu .hright2,body.wide #menu .hright3{display:flex;flex-direction:column;align-items:stretch;grid-column:2;width:100%}
+  body.wide #menu .hright{grid-row:1}
+  body.wide #menu .hright2{grid-row:2}
+  body.wide #menu .hright3{grid-row:3;align-self:center}
+  body.wide #menu h1.logo{font-size:clamp(56px,6.4vw,96px);text-align:left;line-height:.95}
+  body.wide #menu .kicker{text-align:left;font-size:14px}
+  body.wide #menu .tagline{display:block;font-size:clamp(17px,1.5vw,22px);color:#e8d5ff;font-weight:600;margin-top:16px;line-height:1.4}
+  body.wide #menu .stagebtn,body.wide #menu .stagebtn canvas{width:clamp(220px,24vw,330px);height:clamp(220px,24vw,330px)}
+  body.wide #menu .party{margin-top:0}
+}
 canvas{display:block;width:100%;height:100%;touch-action:none}
 .hudbtns{position:absolute;top:12px;right:12px;display:none;gap:8px;z-index:3}
 .hudbtns.show{display:flex}
@@ -220,6 +242,7 @@ body:not(.online) .online-only{display:none!important}
 </style>
 </head>
 <body>
+<canvas id="bgfull" aria-hidden="true"></canvas>
 <div id="wrap">
   <canvas id="c"></canvas>
 
@@ -237,22 +260,32 @@ body:not(.online) .online-only{display:none!important}
   </div>
 
   <div class="ov show" id="menu"><div class="inner home">
+   <div class="hright">
     <div class="topbar">
       <div class="tb tblv" title="Your level"><span id="lvlName">🎖 Lv 1</span><div class="lvlbar"><i id="lvlFill"></i></div><span id="lvlNext" hidden></span></div>
       <div class="tb" id="streakPill" title="Daily streak">🔥 0</div>
       <div class="tb" id="bankPill" title="Your bank">🏦 ₦0</div>
     </div>
+   </div>
+   <div class="hleft">
     <div class="kicker" id="homeKicker">A Lagos party arcade</div>
     <h1 class="logo">OWAMBE SURVIVOR</h1>
+    <p class="tagline">Catch the naira. Dodge the aunties.<br>Win the dance-off. 💃🏾</p>
+   </div>
+   <div class="hright2">
     <div class="today chcard" id="chCard" style="display:none">
       <div class="chtxt" id="chTxt"></div>
       <div class="tmeta" id="chMeta"></div>
       <button class="btn" id="chBtn">Accept the challenge</button>
     </div>
+   </div>
+   <div class="hleft2">
     <button class="stagebtn" id="lookStage" aria-label="Change outfit">
       <canvas id="lookAv"></canvas>
       <span class="tapme">👗 Tap to change outfit</span>
     </button>
+   </div>
+   <div class="hright3">
     <div class="party" id="todayCard">
       <canvas id="mcAv" style="display:none;position:absolute;right:10px;top:10px;width:52px;height:52px"></canvas>
       <div class="pnum" id="tNum">Today's Owambe #1</div>
@@ -270,6 +303,7 @@ body:not(.online) .online-only{display:none!important}
       <button id="syncBtn" class="online-only"><span>📱</span>Devices</button>
       <button id="howBtn"><span>❓</span>How to play</button>
     </div>
+   </div>
     <div id="lookName" hidden></div>
   </div></div>
 
@@ -661,7 +695,12 @@ function buildBg(){
   gr.addColorStop(0,'rgba(0,0,0,0)'); gr.addColorStop(1,'rgba(0,0,0,.55)');
   vb.fillStyle=gr; vb.fillRect(0,0,W,H);
   vigCache=v;
+  if(typeof drawAmbientBg==='function') try{drawAmbientBg();}catch(e){}
 }
+const bgf=document.getElementById('bgfull'), bgfc=bgf.getContext('2d'); let wideOn=null;
+function drawAmbientBg(){ if(!bgCache) return; const fw=Math.round(innerWidth/4+20), fh=Math.round(innerHeight/4+20); if(bgf.width!==fw||bgf.height!==fh){bgf.width=fw; bgf.height=fh;}
+  const k=Math.max(fw/W,fh/H); bgfc.drawImage(bgCache,(fw-W*k)/2,(fh-H*k)/2,W*k,H*k); }
+function syncWide(){ const w=!(g&&(state==='play'||state==='pause'||state==='over')); if(w!==wideOn){ wideOn=w; document.body.classList.toggle('wide',w); requestAnimationFrame(()=>{resize(); drawAmbientBg();}); } }
 function setVenue(v){ if(v!==curVenue){curVenue=v; buildBg();} }
 
 // ---------- audio ----------
@@ -1920,7 +1959,7 @@ function drawMenuAv(){
 if(FORCED_MC){ $('#mcAv').style.display='block'; $('#todayCard').classList.add('withav'); $('#homeKicker').textContent='Special edition · hosted by '+FORCED_MC.name; }
 const lav=$('#lookAv'), lavc=lav.getContext('2d');
 function drawLookAv(){
-  const S=200, d=Math.min(2,window.devicePixelRatio||1); if(lav.width!==S*d){lav.width=S*d; lav.height=S*d;}
+  const S=200, css=lav.clientWidth||200, d=Math.min(2,window.devicePixelRatio||1)*css/S; if(lav.width!==Math.round(S*d)){lav.width=Math.round(S*d); lav.height=Math.round(S*d);}
   lavc.setTransform(d,0,0,d,0,0); lavc.clearRect(0,0,S,S);
   const w=72,h=w*96/58, bt=clock*BPS, bob=Math.abs(Math.sin(bt*Math.PI))*4;
   lavc.fillStyle='rgba(0,0,0,.35)'; lavc.beginPath(); lavc.ellipse(S/2,S*.56+h*.5,w*.62,7,0,0,7); lavc.fill();
@@ -1971,6 +2010,7 @@ function frame(t){
     clock+=s; g.real+=dt; update(s);
   } else if(state==='menu'||state==='wardrobe'){clock+=dt; updateDeco(dt); if(state==='wardrobe') drawPreview(); else { drawLookAv(); if(FORCED_MC) drawMenuAv(); }}
   else if(state==='over'){clock+=dt*.5;}
+  syncWide();
   syncBoostBar();
   render(dt);
   requestAnimationFrame(frame);
@@ -1990,6 +2030,7 @@ function openWardrobe(kind,from,tab,otab){
 function startGame(){
   if(!buyPending()) return;
   saveLook(); show('wardrobe',false); show('prep',false);
+  if(wideOn!==false){ wideOn=false; document.body.classList.remove('wide'); resize(); }
   initAudio(); newGame(); renderBoostBar(); state='play';
   track('game_start',{mode:g.cfg.mode,venue:g.cfg.venue}); nextT=0; step=0; bar=0; startTrack();
   show('menu',false); show('over',false); show('pause',false); $('#hudbtns').classList.add('show');
